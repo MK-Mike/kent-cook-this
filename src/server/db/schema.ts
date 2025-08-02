@@ -2,7 +2,13 @@
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
 import { sql } from "drizzle-orm";
-import { index, sqliteTableCreator } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
+import {
+  sqliteTableCreator,
+  index,
+  uniqueIndex,
+  primaryKey,
+} from "drizzle-orm/sqlite-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -27,3 +33,332 @@ export const posts = createTable(
   }),
   (t) => [index("name_idx").on(t.name)],
 );
+
+// ----------------------------------------------------
+// CORE TABLES
+// ----------------------------------------------------
+
+// USERS
+export const users = createTable(
+  "users",
+  (d) => ({
+    id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    name: d.text({ length: 255 }).notNull(),
+    email: d.text({ length: 320 }).notNull(),
+    passwordHash: d.text().notNull(),
+    avatarUrl: d.text(),
+    createdAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  }),
+  (t) => [uniqueIndex("users_email_idx").on(t.email)],
+);
+
+// RECIPES
+export const recipes = createTable("recipes", (d) => ({
+  id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  authorId: d
+    .integer({ mode: "number" })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: d.text({ length: 255 }).notNull(),
+  description: d.text(),
+  prepTimeMins: d.integer({ mode: "number" }),
+  cookTimeMins: d.integer({ mode: "number" }),
+  servings: d.integer({ mode: "number" }),
+  imageUrl: d.text(),
+  createdAt: d
+    .integer({ mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+  updatedAt: d
+    .integer({ mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .$onUpdate(() => new Date()),
+}));
+
+// INGREDIENTS MASTER LIST
+export const ingredients = createTable("ingredients", (d) => ({
+  id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: d.text({ length: 255 }).notNull().unique(),
+}));
+
+// ----------------------------------------------------
+// UNIT CONVERSION & SCALING TABLES
+// ----------------------------------------------------
+
+// UNITS (enums stored as text with CHECK constraints)
+export const units = createTable(
+  "units",
+  (d) => ({
+    id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    name: d.text({ length: 50 }).notNull(),
+    abbreviation: d.text({ length: 10 }).notNull(),
+    type: d.text().notNull(), // 'volume' or 'mass'
+    factorToBase: d.real().notNull(),
+    system: d.text().notNull(), // 'metric' or 'imperial'
+    subUnitId: d
+      .integer({ mode: "number" })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .references((): any => units.id, { onDelete: "set null" }),
+    subUnitScale: d.integer({ mode: "number" }),
+  }),
+  (t) => [
+    uniqueIndex("units_name_abbrev_type_idx").on(
+      t.name,
+      t.abbreviation,
+      t.type,
+    ),
+  ],
+);
+
+// INGREDIENT DENSITY
+export const ingredientDensities = createTable(
+  "ingredient_densities",
+  (d) => ({
+    id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    ingredientId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => ingredients.id, { onDelete: "cascade" }),
+    densityGPerMl: d.real().notNull(),
+  }),
+  (t) => [uniqueIndex("ingredient_density_ingredient_idx").on(t.ingredientId)],
+);
+
+// ----------------------------------------------------
+// JUNCTION & DETAIL TABLES
+// ----------------------------------------------------
+
+// RECIPE ↔ INGREDIENT JOIN
+export const recipeIngredients = createTable("recipe_ingredients", (d) => ({
+  id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  recipeId: d
+    .integer({ mode: "number" })
+    .notNull()
+    .references(() => recipes.id, { onDelete: "cascade" }),
+  ingredientId: d
+    .integer({ mode: "number" })
+    .notNull()
+    .references(() => ingredients.id, { onDelete: "restrict" }),
+  quantity: d.real(),
+  unitId: d
+    .integer({ mode: "number" })
+    .references(() => units.id, { onDelete: "restrict" }),
+}));
+
+// STEP-BY-STEP INSTRUCTIONS
+export const steps = createTable(
+  "steps",
+  (d) => ({
+    id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    recipeId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    position: d.integer({ mode: "number" }).notNull(),
+    title: d.text({ length: 255 }),
+    description: d.text().notNull(),
+    imageUrl: d.text(),
+  }),
+  (t) => [uniqueIndex("steps_recipe_position_idx").on(t.recipeId, t.position)],
+);
+
+// JOIN TABLE FOR INGREDIENTS PER STEP
+export const stepIngredients = createTable(
+  "step_ingredients",
+  (d) => ({
+    stepId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => steps.id, { onDelete: "cascade" }),
+    ingredientId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => ingredients.id, { onDelete: "restrict" }),
+  }),
+  (t) => [primaryKey({ columns: [t.stepId, t.ingredientId] })],
+);
+
+// CATEGORIES
+export const categories = createTable("categories", (d) => ({
+  id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  name: d.text({ length: 100 }).notNull().unique(),
+}));
+
+// RECIPE ↔ CATEGORY JOIN
+export const recipeCategories = createTable(
+  "recipe_categories",
+  (d) => ({
+    recipeId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    categoryId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => categories.id, { onDelete: "cascade" }),
+  }),
+  (t) => [primaryKey({ columns: [t.recipeId, t.categoryId] })],
+);
+
+// USER FAVORITES
+export const favorites = createTable(
+  "favorites",
+  (d) => ({
+    id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    userId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    recipeId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    createdAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  }),
+  (t) => [uniqueIndex("favorites_user_recipe_idx").on(t.userId, t.recipeId)],
+);
+
+// COMMENTS
+export const comments = createTable("comments", (d) => ({
+  id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+  recipeId: d
+    .integer({ mode: "number" })
+    .notNull()
+    .references(() => recipes.id, { onDelete: "cascade" }),
+  userId: d
+    .integer({ mode: "number" })
+    .notNull()
+    .references(() => users.id, { onDelete: "set null" }),
+  content: d.text().notNull(),
+  createdAt: d
+    .integer({ mode: "timestamp" })
+    .default(sql`(unixepoch())`)
+    .notNull(),
+}));
+
+// ----------------------------------------------------
+// RELATIONS (unchanged from your original)
+// ----------------------------------------------------
+
+export const usersRelations = relations(users, ({ many }) => ({
+  recipes: many(recipes),
+  favorites: many(favorites),
+  comments: many(comments),
+}));
+
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
+  author: one(users, { fields: [recipes.authorId], references: [users.id] }),
+  ingredients: many(recipeIngredients),
+  steps: many(steps),
+  categories: many(recipeCategories),
+  favorites: many(favorites),
+  comments: many(comments),
+}));
+
+export const ingredientsRelations = relations(ingredients, ({ one, many }) => ({
+  recipeIngredients: many(recipeIngredients),
+  density: one(ingredientDensities, {
+    fields: [ingredients.id],
+    references: [ingredientDensities.ingredientId],
+  }),
+  stepIngredients: many(stepIngredients),
+}));
+
+export const unitsRelations = relations(units, ({ many, one }) => ({
+  recipeIngredients: many(recipeIngredients),
+  parentUnit: one(units, {
+    fields: [units.subUnitId],
+    references: [units.id],
+    relationName: "parent_unit",
+  }),
+  childUnits: many(units, {
+    relationName: "parent_unit",
+  }),
+}));
+
+export const ingredientDensitiesRelations = relations(
+  ingredientDensities,
+  ({ one }) => ({
+    ingredient: one(ingredients, {
+      fields: [ingredientDensities.ingredientId],
+      references: [ingredients.id],
+    }),
+  }),
+);
+
+export const recipeIngredientsRelations = relations(
+  recipeIngredients,
+  ({ one }) => ({
+    recipe: one(recipes, {
+      fields: [recipeIngredients.recipeId],
+      references: [recipes.id],
+    }),
+    ingredient: one(ingredients, {
+      fields: [recipeIngredients.ingredientId],
+      references: [ingredients.id],
+    }),
+    unit: one(units, {
+      fields: [recipeIngredients.unitId],
+      references: [units.id],
+    }),
+  }),
+);
+
+export const stepsRelations = relations(steps, ({ one, many }) => ({
+  recipe: one(recipes, { fields: [steps.recipeId], references: [recipes.id] }),
+  stepIngredients: many(stepIngredients),
+}));
+
+export const stepIngredientsRelations = relations(
+  stepIngredients,
+  ({ one }) => ({
+    step: one(steps, {
+      fields: [stepIngredients.stepId],
+      references: [steps.id],
+    }),
+    ingredient: one(ingredients, {
+      fields: [stepIngredients.ingredientId],
+      references: [ingredients.id],
+    }),
+  }),
+);
+
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  recipeCategories: many(recipeCategories),
+}));
+
+export const recipeCategoriesRelations = relations(
+  recipeCategories,
+  ({ one }) => ({
+    recipe: one(recipes, {
+      fields: [recipeCategories.recipeId],
+      references: [recipes.id],
+    }),
+    category: one(categories, {
+      fields: [recipeCategories.categoryId],
+      references: [categories.id],
+    }),
+  }),
+);
+
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  user: one(users, { fields: [favorites.userId], references: [users.id] }),
+  recipe: one(recipes, {
+    fields: [favorites.recipeId],
+    references: [recipes.id],
+  }),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [comments.recipeId],
+    references: [recipes.id],
+  }),
+  user: one(users, { fields: [comments.userId], references: [users.id] }),
+}));
