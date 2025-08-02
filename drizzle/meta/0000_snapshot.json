@@ -1,9 +1,332 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3a03376a-c049-4237-ae3d-c7a535867de3",
+  "id": "0a041d56-c6b4-4fc3-bf83-8a18e484abe5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "kent-cook-this_categories": {
+      "name": "kent-cook-this_categories",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "parentId": {
+          "name": "parentId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sortOrder": {
+          "name": "sortOrder",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "categories_slug_idx": {
+          "name": "categories_slug_idx",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        },
+        "categories_parent_id_idx": {
+          "name": "categories_parent_id_idx",
+          "columns": [
+            "parentId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "kent-cook-this_categories_parentId_kent-cook-this_categories_id_fk": {
+          "name": "kent-cook-this_categories_parentId_kent-cook-this_categories_id_fk",
+          "tableFrom": "kent-cook-this_categories",
+          "tableTo": "kent-cook-this_categories",
+          "columnsFrom": [
+            "parentId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_comments": {
+      "name": "kent-cook-this_comments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "recipeId": {
+          "name": "recipeId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kent-cook-this_comments_recipeId_kent-cook-this_recipes_id_fk": {
+          "name": "kent-cook-this_comments_recipeId_kent-cook-this_recipes_id_fk",
+          "tableFrom": "kent-cook-this_comments",
+          "tableTo": "kent-cook-this_recipes",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_comments_userId_kent-cook-this_users_id_fk": {
+          "name": "kent-cook-this_comments_userId_kent-cook-this_users_id_fk",
+          "tableFrom": "kent-cook-this_comments",
+          "tableTo": "kent-cook-this_users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_favorites": {
+      "name": "kent-cook-this_favorites",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recipeId": {
+          "name": "recipeId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "favorites_user_recipe_idx": {
+          "name": "favorites_user_recipe_idx",
+          "columns": [
+            "userId",
+            "recipeId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "kent-cook-this_favorites_userId_kent-cook-this_users_id_fk": {
+          "name": "kent-cook-this_favorites_userId_kent-cook-this_users_id_fk",
+          "tableFrom": "kent-cook-this_favorites",
+          "tableTo": "kent-cook-this_users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_favorites_recipeId_kent-cook-this_recipes_id_fk": {
+          "name": "kent-cook-this_favorites_recipeId_kent-cook-this_recipes_id_fk",
+          "tableFrom": "kent-cook-this_favorites",
+          "tableTo": "kent-cook-this_recipes",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_ingredient_densities": {
+      "name": "kent-cook-this_ingredient_densities",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "ingredientId": {
+          "name": "ingredientId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "densityGPerMl": {
+          "name": "densityGPerMl",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "ingredient_density_ingredient_idx": {
+          "name": "ingredient_density_ingredient_idx",
+          "columns": [
+            "ingredientId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "kent-cook-this_ingredient_densities_ingredientId_kent-cook-this_ingredients_id_fk": {
+          "name": "kent-cook-this_ingredient_densities_ingredientId_kent-cook-this_ingredients_id_fk",
+          "tableFrom": "kent-cook-this_ingredient_densities",
+          "tableTo": "kent-cook-this_ingredients",
+          "columnsFrom": [
+            "ingredientId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_ingredients": {
+      "name": "kent-cook-this_ingredients",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "ingredients_name_unique": {
+          "name": "ingredients_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "kent-cook-this_post": {
       "name": "kent-cook-this_post",
       "columns": {
@@ -44,6 +367,706 @@
             "name"
           ],
           "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_recipe_categories": {
+      "name": "kent-cook-this_recipe_categories",
+      "columns": {
+        "recipeId": {
+          "name": "recipeId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "categoryId": {
+          "name": "categoryId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kent-cook-this_recipe_categories_recipeId_kent-cook-this_recipes_id_fk": {
+          "name": "kent-cook-this_recipe_categories_recipeId_kent-cook-this_recipes_id_fk",
+          "tableFrom": "kent-cook-this_recipe_categories",
+          "tableTo": "kent-cook-this_recipes",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_recipe_categories_categoryId_kent-cook-this_categories_id_fk": {
+          "name": "kent-cook-this_recipe_categories_categoryId_kent-cook-this_categories_id_fk",
+          "tableFrom": "kent-cook-this_recipe_categories",
+          "tableTo": "kent-cook-this_categories",
+          "columnsFrom": [
+            "categoryId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "kent-cook-this_recipe_categories_recipeId_categoryId_pk": {
+          "columns": [
+            "recipeId",
+            "categoryId"
+          ],
+          "name": "kent-cook-this_recipe_categories_recipeId_categoryId_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_recipe_ingredients": {
+      "name": "kent-cook-this_recipe_ingredients",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "recipeId": {
+          "name": "recipeId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ingredientId": {
+          "name": "ingredientId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "unitId": {
+          "name": "unitId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kent-cook-this_recipe_ingredients_recipeId_kent-cook-this_recipes_id_fk": {
+          "name": "kent-cook-this_recipe_ingredients_recipeId_kent-cook-this_recipes_id_fk",
+          "tableFrom": "kent-cook-this_recipe_ingredients",
+          "tableTo": "kent-cook-this_recipes",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_recipe_ingredients_ingredientId_kent-cook-this_ingredients_id_fk": {
+          "name": "kent-cook-this_recipe_ingredients_ingredientId_kent-cook-this_ingredients_id_fk",
+          "tableFrom": "kent-cook-this_recipe_ingredients",
+          "tableTo": "kent-cook-this_ingredients",
+          "columnsFrom": [
+            "ingredientId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_recipe_ingredients_unitId_kent-cook-this_units_id_fk": {
+          "name": "kent-cook-this_recipe_ingredients_unitId_kent-cook-this_units_id_fk",
+          "tableFrom": "kent-cook-this_recipe_ingredients",
+          "tableTo": "kent-cook-this_units",
+          "columnsFrom": [
+            "unitId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_recipe_tags": {
+      "name": "kent-cook-this_recipe_tags",
+      "columns": {
+        "recipeId": {
+          "name": "recipeId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tagId": {
+          "name": "tagId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kent-cook-this_recipe_tags_recipeId_kent-cook-this_recipes_id_fk": {
+          "name": "kent-cook-this_recipe_tags_recipeId_kent-cook-this_recipes_id_fk",
+          "tableFrom": "kent-cook-this_recipe_tags",
+          "tableTo": "kent-cook-this_recipes",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_recipe_tags_tagId_kent-cook-this_tags_id_fk": {
+          "name": "kent-cook-this_recipe_tags_tagId_kent-cook-this_tags_id_fk",
+          "tableFrom": "kent-cook-this_recipe_tags",
+          "tableTo": "kent-cook-this_tags",
+          "columnsFrom": [
+            "tagId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "kent-cook-this_recipe_tags_recipeId_tagId_pk": {
+          "columns": [
+            "recipeId",
+            "tagId"
+          ],
+          "name": "kent-cook-this_recipe_tags_recipeId_tagId_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_recipes": {
+      "name": "kent-cook-this_recipes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "authorId": {
+          "name": "authorId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prepTimeMins": {
+          "name": "prepTimeMins",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cookTimeMins": {
+          "name": "cookTimeMins",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "servings": {
+          "name": "servings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "subcategory_id": {
+          "name": "subcategory_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kent-cook-this_recipes_authorId_kent-cook-this_users_id_fk": {
+          "name": "kent-cook-this_recipes_authorId_kent-cook-this_users_id_fk",
+          "tableFrom": "kent-cook-this_recipes",
+          "tableTo": "kent-cook-this_users",
+          "columnsFrom": [
+            "authorId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_recipes_category_id_kent-cook-this_categories_id_fk": {
+          "name": "kent-cook-this_recipes_category_id_kent-cook-this_categories_id_fk",
+          "tableFrom": "kent-cook-this_recipes",
+          "tableTo": "kent-cook-this_categories",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_recipes_subcategory_id_kent-cook-this_categories_id_fk": {
+          "name": "kent-cook-this_recipes_subcategory_id_kent-cook-this_categories_id_fk",
+          "tableFrom": "kent-cook-this_recipes",
+          "tableTo": "kent-cook-this_categories",
+          "columnsFrom": [
+            "subcategory_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_step_ingredients": {
+      "name": "kent-cook-this_step_ingredients",
+      "columns": {
+        "stepId": {
+          "name": "stepId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ingredientId": {
+          "name": "ingredientId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kent-cook-this_step_ingredients_stepId_kent-cook-this_steps_id_fk": {
+          "name": "kent-cook-this_step_ingredients_stepId_kent-cook-this_steps_id_fk",
+          "tableFrom": "kent-cook-this_step_ingredients",
+          "tableTo": "kent-cook-this_steps",
+          "columnsFrom": [
+            "stepId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "kent-cook-this_step_ingredients_ingredientId_kent-cook-this_ingredients_id_fk": {
+          "name": "kent-cook-this_step_ingredients_ingredientId_kent-cook-this_ingredients_id_fk",
+          "tableFrom": "kent-cook-this_step_ingredients",
+          "tableTo": "kent-cook-this_ingredients",
+          "columnsFrom": [
+            "ingredientId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "kent-cook-this_step_ingredients_stepId_ingredientId_pk": {
+          "columns": [
+            "stepId",
+            "ingredientId"
+          ],
+          "name": "kent-cook-this_step_ingredients_stepId_ingredientId_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_steps": {
+      "name": "kent-cook-this_steps",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "recipeId": {
+          "name": "recipeId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "imageUrl": {
+          "name": "imageUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "steps_recipe_position_idx": {
+          "name": "steps_recipe_position_idx",
+          "columns": [
+            "recipeId",
+            "position"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "kent-cook-this_steps_recipeId_kent-cook-this_recipes_id_fk": {
+          "name": "kent-cook-this_steps_recipeId_kent-cook-this_recipes_id_fk",
+          "tableFrom": "kent-cook-this_steps",
+          "tableTo": "kent-cook-this_recipes",
+          "columnsFrom": [
+            "recipeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_tags": {
+      "name": "kent-cook-this_tags",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "tags_slug_idx": {
+          "name": "tags_slug_idx",
+          "columns": [
+            "slug"
+          ],
+          "isUnique": true
+        },
+        "tags_name_idx": {
+          "name": "tags_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_units": {
+      "name": "kent-cook-this_units",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abbreviation": {
+          "name": "abbreviation",
+          "type": "text(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "factorToBase": {
+          "name": "factorToBase",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "system": {
+          "name": "system",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subUnitId": {
+          "name": "subUnitId",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "subUnitScale": {
+          "name": "subUnitScale",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "units_name_abbrev_type_idx": {
+          "name": "units_name_abbrev_type_idx",
+          "columns": [
+            "name",
+            "abbreviation",
+            "type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "kent-cook-this_units_subUnitId_kent-cook-this_units_id_fk": {
+          "name": "kent-cook-this_units_subUnitId_kent-cook-this_units_id_fk",
+          "tableFrom": "kent-cook-this_units",
+          "tableTo": "kent-cook-this_units",
+          "columnsFrom": [
+            "subUnitId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "kent-cook-this_users": {
+      "name": "kent-cook-this_users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text(320)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "passwordHash": {
+          "name": "passwordHash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "avatarUrl": {
+          "name": "avatarUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "users_email_idx": {
+          "name": "users_email_idx",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
         }
       },
       "foreignKeys": {},

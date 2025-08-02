@@ -33,6 +33,17 @@ export const posts = createTable(
   }),
   (t) => [index("name_idx").on(t.name)],
 );
+// ----------------
+// ENUMS
+// ----------------
+//
+export const tagTypeEnum = [
+  "dietary_preferences",
+  "cuisines",
+  "preparation_style",
+  "occasions_and_seasons",
+  "key_ingredients",
+] as const;
 
 // ----------------------------------------------------
 // CORE TABLES
@@ -79,10 +90,78 @@ export const recipes = createTable("recipes", (d) => ({
 }));
 
 // INGREDIENTS MASTER LIST
-export const ingredients = createTable("ingredients", (d) => ({
-  id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: d.text({ length: 255 }).notNull().unique(),
-}));
+export const ingredients = createTable(
+  "ingredients",
+  (d) => ({
+    id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    name: d.text({ length: 255 }).notNull(),
+  }),
+  (t) => [uniqueIndex("ingredients_name_unique").on(t.name)],
+);
+
+// --- NEW & MODIFIED CATEGORY/TAG TABLES ---
+// Categories Table (Hierarchical)
+export const categories = createTable(
+  "categories",
+  (d) => ({
+    id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
+    name: d.text().notNull(),
+    slug: d.text().notNull(),
+    description: d.text(),
+    parentId: d
+      .integer({ mode: "number" })
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .references((): any => categories.id),
+    sortOrder: d.integer({ mode: "number" }).notNull().default(0),
+    createdAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  }),
+  (t) => [
+    uniqueIndex("categories_slug_idx").on(t.slug),
+    // uniqueIndex("categories_parent_id_idx").on(t.parentId),
+  ],
+);
+// Tags Table
+export const tags = createTable(
+  "tags",
+  (d) => ({
+    id: d.integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+    name: d.text("name").notNull(),
+    slug: d.text("slug").notNull(),
+    type: d.text("type", { enum: tagTypeEnum }).notNull(), // Enum as TEXT
+    color: d.text("color"),
+    createdAt: d
+      .integer("created_at", { mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  }),
+  (t) => [
+    uniqueIndex("tags_slug_idx").on(t.slug),
+    uniqueIndex("tags_name_idx").on(t.name),
+  ],
+);
+
+// Recipe Tags Table (Many-to-Many between Recipes and Tags)
+export const recipeTags = createTable(
+  "recipe_tags",
+  (d) => ({
+    recipeId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => recipes.id, { onDelete: "cascade" }),
+    tagId: d
+      .integer({ mode: "number" })
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+    createdAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  }),
+  (t) => [primaryKey({ columns: [t.recipeId, t.tagId] })],
+);
 
 // ----------------------------------------------------
 // UNIT CONVERSION & SCALING TABLES
@@ -182,10 +261,6 @@ export const stepIngredients = createTable(
 );
 
 // CATEGORIES
-export const categories = createTable("categories", (d) => ({
-  id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
-  name: d.text({ length: 100 }).notNull().unique(),
-}));
 
 // RECIPE ↔ CATEGORY JOIN
 export const recipeCategories = createTable(
@@ -256,9 +331,9 @@ export const recipesRelations = relations(recipes, ({ one, many }) => ({
   author: one(users, { fields: [recipes.authorId], references: [users.id] }),
   ingredients: many(recipeIngredients),
   steps: many(steps),
-  categories: many(recipeCategories),
   favorites: many(favorites),
   comments: many(comments),
+  recipeTags: many(recipeTags),
 }));
 
 export const ingredientsRelations = relations(ingredients, ({ one, many }) => ({
@@ -329,10 +404,34 @@ export const stepIngredientsRelations = relations(
   }),
 );
 
-export const categoriesRelations = relations(categories, ({ many }) => ({
+// Categories Relations
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  parent: one(categories, {
+    fields: [categories.parentId],
+    references: [categories.id],
+    relationName: "parent_category",
+  }),
+  subcategories: many(categories, { relationName: "parent_category" }),
   recipeCategories: many(recipeCategories),
 }));
 
+// Tags Relations
+export const tagsRelations = relations(tags, ({ many }) => ({
+  recipeTags: many(recipeTags),
+}));
+
+// Recipe Tags Relations
+export const recipeTagsRelations = relations(recipeTags, ({ one, many }) => ({
+  recipe: one(recipes, {
+    fields: [recipeTags.recipeId],
+    references: [recipes.id],
+  }),
+  tag: one(tags, {
+    fields: [recipeTags.tagId],
+    references: [tags.id],
+  }),
+  recipeCategories: many(recipeCategories),
+}));
 export const recipeCategoriesRelations = relations(
   recipeCategories,
   ({ one }) => ({
