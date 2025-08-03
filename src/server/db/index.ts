@@ -11,10 +11,10 @@ const globalForDb = globalThis as unknown as {
 function getClient() {
   if (env.NODE_ENV !== "production") {
     globalForDb.dbClient ??= createClient({
-      url: "file:kent-cook-this.db",
+      url: env.DATABASE_URL,
       syncUrl: env.TURSO_DATABASE_URL,
       authToken: env.TURSO_AUTH_TOKEN,
-      syncInterval: 60,
+      syncInterval: 5,
     });
     return globalForDb.dbClient;
   } else {
