@@ -1,15 +1,34 @@
 import { postRouter } from "~/server/api/routers/post";
-import { ingredientsRouter } from "~/server/api/routers/ingredients";
+import { recipeRouter } from "~/server/api/routers/recipes";
+import { ingredientRouter } from "~/server/api/routers/ingredients";
+import { tagRouter } from "~/server/api/routers/tags";
+import { categoryRouter } from "~/server/api/routers/categories";
+import { stepRouter } from "~/server/api/routers/steps";
+import { commentRouter } from "~/server/api/routers/comments";
+import { favoriteRouter } from "~/server/api/routers/favorites";
+import { recipeIngredientRouter } from "~/server/api/routers/recipeIngredients";
+import { recipeTagRouter } from "~/server/api/routers/recipeTags";
+import { recipeCategoryRouter } from "~/server/api/routers/recipeCategories";
+import { stepIngredientRouter } from "~/server/api/routers/stepIngredients";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
-/**
- * This is the primary router for your server.
- *
- * All routers added in /api/routers should be manually added here.
- */
+//export main tRPC router
 export const appRouter = createTRPCRouter({
+  // Core Routers
   post: postRouter,
-  ingredients: ingredientsRouter,
+  ingredients: ingredientRouter,
+  recipes: recipeRouter,
+  tags: tagRouter,
+  categories: categoryRouter,
+  steps: stepRouter,
+  comments: commentRouter,
+  favorites: favoriteRouter,
+
+  // Junction / Relationship Routers
+  recipeIngredients: recipeIngredientRouter,
+  recipeTags: recipeTagRouter,
+  recipeCategories: recipeCategoryRouter,
+  stepIngredients: stepIngredientRouter,
 });
 
 // export type definition of API
