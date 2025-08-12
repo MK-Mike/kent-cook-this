@@ -1,54 +1,84 @@
 import Link from "next/link";
 
-import { LatestPost } from "~/app/_components/post";
-import { Ingredient } from "./_components/ingredient";
 import { api, HydrateClient } from "~/trpc/server";
-import { Button } from "~/components/ui/button";
+import { SearchBar } from "./_components/search-bar"; // Still a client component
+import { RecipeCard } from "./_components/recipe-card"; // Can be a server component (purely display)
+// import { getAllRecipesForUI, getAllCategories, getAllTags } from "@/lib/types" // Server-side data fetching
+// import type { Category, Tag } from "@/lib/types" // Types are fine
+import { RecipeFilters } from "./_components/recipe-filters";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: {
+    q?: string;
+    categories?: string;
+    tags?: string;
+  };
+}) {
   const hello = await api.post.hello({ text: "from tRPC" });
+  // Data fetching happens directly here on the server
+  const allRecipes = await api.recipes.getAll();
+  const allCategories = await api.categories.getAll();
+  const allTags = await api.tags.getAll();
+
+  // Extract query parameters from the URL
+  const searchQuery = searchParams.q ?? "";
+  const selectedCategories = searchParams.categories?.split(",") ?? [];
+  const selectedTags = searchParams.tags?.split(",") ?? [];
+
+  // Filter recipes directly on the server
+  const filteredRecipes = await api.recipes.getFiltered({
+    name: searchQuery,
+    categories: selectedCategories,
+    tags: selectedTags,
+  });
 
   void api.post.getLatest.prefetch();
+  void api.recipes.getAll.prefetch();
 
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
+        <p>{hello ? hello.greeting : "Loading tRPC query..."}</p>
+        <div className="container mx-auto p-4">
+          <div className="mb-6 flex flex-col items-center gap-4">
+            <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+              Family Recipes
+            </h1>
+            <p className="text-muted-foreground text-xl">
+              Delicious meals, passed down through generations.
             </p>
+            <div className="w-full max-w-md">
+              {/* SearchBar remains a client component if it updates state */}
+              {/* For server components, the search query should be handled via URL params */}
+              <SearchBar initialQuery={searchQuery} />
+            </div>
           </div>
 
-          <LatestPost />
-          <Ingredient />
+          <h2 className="mb-4 text-2xl font-bold">Latest Recipes</h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {/* mockRecipes should be replaced by actual data fetched above */}
+            {allRecipes.slice(0, 4).map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+
+          <div className="mt-16">
+            {/* This whole section handles filtering and will be a Client Component */}
+            <RecipeFilters
+              allCategories={allCategories}
+              allTags={allTags}
+              initialSelectedCategories={selectedCategories}
+              initialSelectedTags={selectedTags}
+            />
+
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredRecipes.map((recipe) => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </div>
+          </div>
         </div>
       </main>
     </HydrateClient>

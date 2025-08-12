@@ -1,13 +1,15 @@
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, exists, like, inArray } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
+  categories,
   recipeCategories,
   recipeIngredients,
   recipes,
   recipeTags,
   stepIngredients,
   steps,
+  tags,
 } from "~/server/db/schema";
 
 const createRecipeSchema = z.object({
@@ -80,7 +82,12 @@ export const recipeRouter = createTRPCRouter({
 
   getAll: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.query.recipes.findMany({
-      with: { author: true },
+      with: {
+        author: true,
+        ingredients: { with: { ingredient: true, unit: true } },
+        steps: true,
+        recipeTags: { with: { tag: true } },
+      },
       orderBy: [desc(recipes.createdAt)],
     });
   }),
@@ -105,7 +112,72 @@ export const recipeRouter = createTRPCRouter({
       with: { author: true },
     });
   }),
+  getByName: publicProcedure
+    .input(z.object({ name: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.recipes.findMany({
+        where: like(recipes.title, input.name),
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
+      });
+    }),
 
+  getByCategory: publicProcedure
+    .input(z.object({ category: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.recipes.findMany({
+        where: exists(
+          ctx.db
+            .select()
+            .from(recipeCategories)
+            .innerJoin(
+              categories,
+              eq(categories.id, recipeCategories.categoryId),
+            )
+            .where(
+              and(
+                eq(recipeCategories.recipeId, recipes.id),
+                eq(categories.name, input.category),
+              ),
+            ),
+        ),
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
+      });
+    }),
+
+  getByTag: publicProcedure
+    .input(z.object({ tag: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.recipes.findMany({
+        where: exists(
+          ctx.db
+            .select()
+            .from(recipeTags)
+            .innerJoin(tags, eq(tags.id, recipeTags.tagId))
+            .where(
+              and(
+                eq(recipeTags.recipeId, recipes.id),
+                eq(tags.name, input.tag),
+              ),
+            ),
+        ),
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
+      });
+    }),
   getByAuthor: publicProcedure
     .input(z.object({ authorId: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -113,6 +185,68 @@ export const recipeRouter = createTRPCRouter({
         where: eq(recipes.authorId, input.authorId),
         with: { author: true },
         orderBy: [desc(recipes.createdAt)],
+      });
+    }),
+  getFiltered: publicProcedure
+    .input(
+      z.object({
+        name: z.string().optional(),
+        tags: z.array(z.string()).optional(),
+        categories: z.array(z.string()).optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const conditions = [];
+
+      if (input.name) {
+        conditions.push(like(recipes.title, input.name));
+      }
+
+      if (input.tags?.length) {
+        conditions.push(
+          exists(
+            ctx.db
+              .select()
+              .from(recipeTags)
+              .innerJoin(tags, eq(tags.id, recipeTags.tagId))
+              .where(
+                and(
+                  eq(recipeTags.recipeId, recipes.id),
+                  inArray(tags.name, input.tags),
+                ),
+              ),
+          ),
+        );
+      }
+
+      if (input.categories?.length) {
+        conditions.push(
+          exists(
+            ctx.db
+              .select()
+              .from(recipeCategories)
+              .innerJoin(
+                categories,
+                eq(categories.id, recipeCategories.categoryId),
+              )
+              .where(
+                and(
+                  eq(recipeCategories.recipeId, recipes.id),
+                  inArray(categories.name, input.categories),
+                ),
+              ),
+          ),
+        );
+      }
+
+      return await ctx.db.query.recipes.findMany({
+        where: conditions.length ? and(...conditions) : undefined,
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
       });
     }),
   createWithDetails: publicProcedure
