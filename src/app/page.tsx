@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { api, HydrateClient } from "~/trpc/server";
 import { SearchBar } from "./_components/search-bar"; // Still a client component
 import { RecipeCard } from "./_components/recipe-card"; // Can be a server component (purely display)
@@ -16,8 +14,6 @@ export default async function Home({
     tags?: string;
   };
 }) {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  // Data fetching happens directly here on the server
   const allRecipes = await api.recipes.getAll();
   const allCategories = await api.categories.getAll();
   const allTags = await api.tags.getAll();
@@ -39,8 +35,7 @@ export default async function Home({
 
   return (
     <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <p>{hello ? hello.greeting : "Loading tRPC query..."}</p>
+      <main className="flex min-h-screen flex-col items-center justify-center">
         <div className="container mx-auto p-4">
           <div className="mb-6 flex flex-col items-center gap-4">
             <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
@@ -58,7 +53,6 @@ export default async function Home({
 
           <h2 className="mb-4 text-2xl font-bold">Latest Recipes</h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {/* mockRecipes should be replaced by actual data fetched above */}
             {allRecipes.slice(0, 4).map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />
             ))}
