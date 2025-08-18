@@ -19,9 +19,10 @@ export default async function Home({
   const allTags = await api.tags.getAll();
 
   // Extract query parameters from the URL
-  const searchQuery = searchParams.q ?? "";
-  const selectedCategories = searchParams.categories?.split(",") ?? [];
-  const selectedTags = searchParams.tags?.split(",") ?? [];
+  const params = await Promise.resolve(searchParams);
+  const searchQuery = params.q ?? "";
+  const selectedCategories = params.categories?.split(",") ?? [];
+  const selectedTags = params.tags?.split(",") ?? [];
 
   // Filter recipes directly on the server
   const filteredRecipes = await api.recipes.getFiltered({
