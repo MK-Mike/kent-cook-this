@@ -1,73 +1,94 @@
-"use client"
+"use client";
 
-import { RecipeCard } from "@/components/recipe-card"
-import { Button } from "@/components/ui/button"
-import { getTagsByType } from "@/lib/types"
-import { useState, useMemo } from "react"
-import { Filter, X } from "lucide-react"
-import { notFound } from "next/navigation"
-import { mockCategories, mockRecipes } from "@/lib/mock-data" // Corrected import
-import Loading from "./loading"
-import { Suspense } from "react"
+import { RecipeCard } from "@/components/recipe-card";
+import { Button } from "@/components/ui/button";
+import { getTagsByType } from "@/lib/types2";
+import { useState, useMemo } from "react";
+import { Filter, X } from "lucide-react";
+import { notFound } from "next/navigation";
+import { mockCategories, mockRecipes } from "@/lib/mock-data"; // Corrected import
+import Loading from "./loading";
+import { Suspense } from "react";
 
 interface CategoryPageProps {
   params: {
-    slug: string
-  }
+    slug: string;
+  };
 }
 
 export default function CategoryPage({ params }: CategoryPageProps) {
-  const { slug } = params
+  const { slug } = params;
   const category = useMemo(() => {
-    return mockCategories.find((cat) => cat.slug === slug)
-  }, [slug])
+    return mockCategories.find((cat) => cat.slug === slug);
+  }, [slug]);
 
   if (!category) {
-    notFound()
+    notFound();
   }
 
-  const categoryName = category.name || slug.charAt(0).toUpperCase() + slug.slice(1).replace("-", " ")
+  const categoryName =
+    category.name ||
+    slug.charAt(0).toUpperCase() + slug.slice(1).replace("-", " ");
 
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [showFilters, setShowFilters] = useState(false)
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Get all tag types for filtering
-  const dietaryTags = getTagsByType("dietary_preferences")
-  const cuisineTags = getTagsByType("cuisines")
-  const preparationTags = getTagsByType("preparation_style")
-  const occasionTags = getTagsByType("occasions_and_seasons")
+  const dietaryTags = getTagsByType("dietary_preferences");
+  const cuisineTags = getTagsByType("cuisines");
+  const preparationTags = getTagsByType("preparation_style");
+  const occasionTags = getTagsByType("occasions_and_seasons");
 
   const filteredRecipes = useMemo(() => {
-    let recipes = mockRecipes.filter((recipe) => recipe.category?.slug === slug || recipe.subcategory?.slug === slug)
+    let recipes = mockRecipes.filter(
+      (recipe) =>
+        recipe.category?.slug === slug || recipe.subcategory?.slug === slug,
+    );
 
     if (selectedTags.length > 0) {
-      recipes = recipes.filter((recipe) => selectedTags.some((tagSlug) => recipe.tags.includes(tagSlug)))
+      recipes = recipes.filter((recipe) =>
+        selectedTags.some((tagSlug) => recipe.tags.includes(tagSlug)),
+      );
     }
-    return recipes
-  }, [slug, selectedTags])
+    return recipes;
+  }, [slug, selectedTags]);
 
   const toggleTag = (tagSlug: string) => {
-    setSelectedTags((prev) => (prev.includes(tagSlug) ? prev.filter((s) => s !== tagSlug) : [...prev, tagSlug]))
-  }
+    setSelectedTags((prev) =>
+      prev.includes(tagSlug)
+        ? prev.filter((s) => s !== tagSlug)
+        : [...prev, tagSlug],
+    );
+  };
 
   const clearFilters = () => {
-    setSelectedTags([])
-  }
+    setSelectedTags([]);
+  };
 
   return (
-    <div className="md:ml-64 min-h-screen bg-background">
+    <div className="bg-background min-h-screen md:ml-64">
       <div className="p-8 pt-16 md:pt-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{categoryName}</h1>
-              {category.description && <p className="text-muted-foreground mt-2">{category.description}</p>}
+              <h1 className="text-foreground text-3xl font-bold">
+                {categoryName}
+              </h1>
+              {category.description && (
+                <p className="text-muted-foreground mt-2">
+                  {category.description}
+                </p>
+              )}
             </div>
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="h-4 w-4" />
               Filters
               {selectedTags.length > 0 && (
-                <span className="ml-1 px-2 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+                <span className="bg-primary text-primary-foreground ml-1 rounded-full px-2 py-0.5 text-xs">
                   {selectedTags.length}
                 </span>
               )}
@@ -75,12 +96,19 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </div>
 
           {showFilters && (
-            <div className="bg-card rounded-lg p-6 mb-8 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium text-card-foreground">Filter by Tags</h3>
+            <div className="bg-card mb-8 rounded-lg p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-card-foreground font-medium">
+                  Filter by Tags
+                </h3>
                 {selectedTags.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearFilters} className="flex items-center gap-1">
-                    <X className="w-3 h-3" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="flex items-center gap-1"
+                  >
+                    <X className="h-3 w-3" />
                     Clear all
                   </Button>
                 )}
@@ -89,12 +117,18 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               <div className="space-y-4">
                 {dietaryTags.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-card-foreground mb-2 text-sm">Dietary Preferences</h4>
+                    <h4 className="text-card-foreground mb-2 text-sm font-medium">
+                      Dietary Preferences
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {dietaryTags.map((tag) => (
                         <Button
                           key={tag.slug}
-                          variant={selectedTags.includes(tag.slug) ? "default" : "outline"}
+                          variant={
+                            selectedTags.includes(tag.slug)
+                              ? "default"
+                              : "outline"
+                          }
                           size="sm"
                           onClick={() => toggleTag(tag.slug)}
                           className="text-xs"
@@ -120,12 +154,18 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
                 {cuisineTags.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-card-foreground mb-2 text-sm">Cuisines</h4>
+                    <h4 className="text-card-foreground mb-2 text-sm font-medium">
+                      Cuisines
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {cuisineTags.map((tag) => (
                         <Button
                           key={tag.slug}
-                          variant={selectedTags.includes(tag.slug) ? "default" : "outline"}
+                          variant={
+                            selectedTags.includes(tag.slug)
+                              ? "default"
+                              : "outline"
+                          }
                           size="sm"
                           onClick={() => toggleTag(tag.slug)}
                           className="text-xs"
@@ -151,12 +191,18 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
                 {preparationTags.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-card-foreground mb-2 text-sm">Preparation Style</h4>
+                    <h4 className="text-card-foreground mb-2 text-sm font-medium">
+                      Preparation Style
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {preparationTags.map((tag) => (
                         <Button
                           key={tag.slug}
-                          variant={selectedTags.includes(tag.slug) ? "default" : "outline"}
+                          variant={
+                            selectedTags.includes(tag.slug)
+                              ? "default"
+                              : "outline"
+                          }
                           size="sm"
                           onClick={() => toggleTag(tag.slug)}
                           className="text-xs"
@@ -182,12 +228,18 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
                 {occasionTags.length > 0 && (
                   <div>
-                    <h4 className="font-medium text-card-foreground mb-2 text-sm">Occasions & Seasons</h4>
+                    <h4 className="text-card-foreground mb-2 text-sm font-medium">
+                      Occasions & Seasons
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {occasionTags.map((tag) => (
                         <Button
                           key={tag.slug}
-                          variant={selectedTags.includes(tag.slug) ? "default" : "outline"}
+                          variant={
+                            selectedTags.includes(tag.slug)
+                              ? "default"
+                              : "outline"
+                          }
                           size="sm"
                           onClick={() => toggleTag(tag.slug)}
                           className="text-xs"
@@ -215,7 +267,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           )}
 
           <Suspense fallback={<Loading />}>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredRecipes.map((recipe) => (
                 <RecipeCard key={recipe.id} recipe={recipe} />
               ))}
@@ -223,7 +275,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
           </Suspense>
 
           {filteredRecipes.length === 0 && (
-            <div className="text-center py-12">
+            <div className="py-12 text-center">
               <p className="text-muted-foreground">
                 {selectedTags.length > 0
                   ? "No recipes found matching your filters."
@@ -234,5 +286,5 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -18,7 +18,7 @@ const createRecipeSchema = z.object({
   description: z.string().optional(),
   prepTimeMins: z.number().positive().optional(),
   cookTimeMins: z.number().positive().optional(),
-  servings: z.number().positive().optional(),
+  servings: z.number().positive(),
   imageUrl: z.string().url().optional(),
 });
 
@@ -29,7 +29,7 @@ const updateRecipeSchema = createRecipeSchema.partial().extend({
 // Schema for a single ingredient within the recipe
 const recipeIngredientInputSchema = z.object({
   ingredientId: z.number(),
-  quantity: z.number().nullable(),
+  quantity: z.number(),
   unitId: z.number().nullable(),
 });
 
@@ -50,7 +50,7 @@ const createRecipeWithDetailsSchema = z.object({
   description: z.string().optional(),
   prepTimeMins: z.number().positive().optional(),
   cookTimeMins: z.number().positive().optional(),
-  servings: z.number().positive().optional(),
+  servings: z.number().positive(),
   imageUrl: z.string().url().optional(),
 
   // Nested arrays for related data

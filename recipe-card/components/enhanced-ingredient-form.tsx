@@ -1,25 +1,37 @@
-"use client"
+"use client";
 
-import { useFieldArray, useFormContext } from "react-hook-form"
-import { Plus, Trash2 } from "lucide-react"
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { Plus, Trash2 } from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { RecipeFormValues } from "@/lib/schema"
-import { getAllUnits, getUnitType } from "@/lib/types"
-import { useMemo } from "react"
+import { Button } from "@/components/ui/button";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { RecipeFormValues } from "@/lib/schema";
+import { getAllUnits, getUnitType } from "@/lib/types2";
+import { useMemo } from "react";
 
 export function EnhancedIngredientForm() {
-  const { control, watch } = useFormContext<RecipeFormValues>()
+  const { control, watch } = useFormContext<RecipeFormValues>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "ingredients",
-  })
+  });
 
-  const allUnits = useMemo(() => getAllUnits(), [])
+  const allUnits = useMemo(() => getAllUnits(), []);
 
   return (
     <Card>
@@ -28,9 +40,11 @@ export function EnhancedIngredientForm() {
       </CardHeader>
       <CardContent className="space-y-4">
         {fields.map((field, index) => {
-          const currentUnit = watch(`ingredients.${index}.unit`)
-          const unitType = getUnitType(currentUnit)
-          const filteredUnits = allUnits.filter((unit) => getUnitType(unit.abbreviation || unit.name) === unitType)
+          const currentUnit = watch(`ingredients.${index}.unit`);
+          const unitType = getUnitType(currentUnit);
+          const filteredUnits = allUnits.filter(
+            (unit) => getUnitType(unit.abbreviation || unit.name) === unitType,
+          );
 
           return (
             <div key={field.id} className="flex items-end gap-2">
@@ -46,7 +60,11 @@ export function EnhancedIngredientForm() {
                         step="0.01"
                         placeholder="Qty"
                         {...field}
-                        onChange={(e) => field.onChange(e.target.value === "" ? "" : Number(e.target.value))}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === "" ? "" : Number(e.target.value),
+                          )
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -59,7 +77,10 @@ export function EnhancedIngredientForm() {
                 render={({ field }) => (
                   <FormItem className="w-32">
                     <FormLabel className="sr-only">Unit</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Unit" />
@@ -67,7 +88,10 @@ export function EnhancedIngredientForm() {
                       </FormControl>
                       <SelectContent>
                         {filteredUnits.map((unit) => (
-                          <SelectItem key={unit.abbreviation || unit.name} value={unit.abbreviation || unit.name}>
+                          <SelectItem
+                            key={unit.abbreviation || unit.name}
+                            value={unit.abbreviation || unit.name}
+                          >
                             {unit.name} ({unit.abbreviation})
                           </SelectItem>
                         ))}
@@ -97,28 +121,40 @@ export function EnhancedIngredientForm() {
                   <FormItem className="flex-1">
                     <FormLabel className="sr-only">Notes</FormLabel>
                     <FormControl>
-                      <Input placeholder="Notes (optional)" {...field} value={field.value || ""} />
+                      <Input
+                        placeholder="Notes (optional)"
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} className="mb-1">
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onClick={() => remove(index)}
+                className="mb-1"
+              >
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Remove ingredient</span>
               </Button>
             </div>
-          )
+          );
         })}
         <Button
           type="button"
           variant="outline"
-          onClick={() => append({ quantity: 0, unit: "g", name: "", notes: "" })}
+          onClick={() =>
+            append({ quantity: 0, unit: "g", name: "", notes: "" })
+          }
           className="w-full"
         >
           <Plus className="mr-2 h-4 w-4" /> Add Ingredient
         </Button>
       </CardContent>
     </Card>
-  )
+  );
 }

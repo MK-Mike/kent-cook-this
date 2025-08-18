@@ -29,7 +29,7 @@ export const recipes = createTable("recipes", (d) => ({
   description: d.text(),
   prepTimeMins: d.integer({ mode: "number" }),
   cookTimeMins: d.integer({ mode: "number" }),
-  servings: d.integer({ mode: "number" }),
+  servings: d.integer({ mode: "number" }).notNull(),
   imageUrl: d.text(),
   createdAt: d
     .integer({ mode: "timestamp" })
@@ -52,7 +52,7 @@ export const recipeIngredients = createTable("recipe_ingredients", (d) => ({
     .integer({ mode: "number" })
     .notNull()
     .references(() => ingredients.id, { onDelete: "restrict" }),
-  quantity: d.real(),
+  quantity: d.real().notNull(),
   unitId: d
     .integer({ mode: "number" })
     .references(() => units.id, { onDelete: "restrict" }),
