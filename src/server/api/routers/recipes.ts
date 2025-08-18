@@ -95,7 +95,7 @@ export const recipeRouter = createTRPCRouter({
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.query.recipes.findFirst({
+      const recipe = await ctx.db.query.recipes.findFirst({
         where: eq(recipes.id, input.id),
         with: {
           author: true,
@@ -104,6 +104,7 @@ export const recipeRouter = createTRPCRouter({
           recipeTags: { with: { tag: true } },
         },
       });
+      return recipe ?? null;
     }),
 
   getLatest: publicProcedure.query(async ({ ctx }) => {
