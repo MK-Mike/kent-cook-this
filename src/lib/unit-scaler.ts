@@ -1,6 +1,8 @@
-import { type Unit, type Ingredient, UnitType, getAllUnits } from "./types2";
+import { api } from "~/trpc/server";
+import { type Ingredient, UnitType } from "./types2";
+import type { SelectUnit as Unit } from "~/server/db/zodSchemas/ingredients";
 
-const units: Unit[] = getAllUnits();
+const units: Unit[] = await api.units.getAll();
 
 export function convertUnits(
   quantity: number,
@@ -15,7 +17,7 @@ export function convertUnits(
   }
 
   // Handle volume to mass conversion if density is provided
-  if (fromUnit.type === UnitType.Volume && toUnit.type === UnitType.Mass) {
+  if (fromUnit.type === "volume" && toUnit.type === "mass") {
     if (!densityGPerMl) {
       throw new Error(
         `Density is required to convert from volume (${fromUnit.name}) to mass (${toUnit.name})`,
@@ -28,7 +30,7 @@ export function convertUnits(
   }
 
   // Handle mass to volume conversion if density is provided
-  if (fromUnit.type === UnitType.Mass && toUnit.type === UnitType.Volume) {
+  if (fromUnit.type === "mass" && toUnit.type === "volume") {
     if (!densityGPerMl) {
       throw new Error(
         `Density is required to convert from mass (${fromUnit.name}) to volume (${toUnit.name})`,
@@ -41,13 +43,13 @@ export function convertUnits(
   }
 
   // Standard conversion within the same unit type (mass, volume, count)
-  if (fromUnit.type === UnitType.Mass) {
+  if (fromUnit.type === "mass") {
     const quantityG = quantity * fromUnit.gPerUnit;
     return quantityG / toUnit.gPerUnit;
-  } else if (fromUnit.type === UnitType.Volume) {
+  } else if (fromUnit.type === "volume") {
     const quantityMl = quantity * fromUnit.mlPerUnit;
     return quantityMl / toUnit.mlPerUnit;
-  } else if (fromUnit.type === UnitType.Count) {
+  } else if (fromUnit.type === "count") {
     // For count units, direct conversion if a ratio exists, otherwise 1:1
     if (fromUnit.unitsPerUnit && toUnit.unitsPerUnit) {
       return (quantity * fromUnit.unitsPerUnit) / toUnit.unitsPerUnit;

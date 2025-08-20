@@ -10,6 +10,7 @@ import { recipeIngredientRouter } from "~/server/api/routers/recipeIngredients";
 import { recipeTagRouter } from "~/server/api/routers/recipeTags";
 import { recipeCategoryRouter } from "~/server/api/routers/recipeCategories";
 import { stepIngredientRouter } from "~/server/api/routers/stepIngredients";
+import { unitRouter } from "~/server/api/routers/units";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 //export main tRPC router
@@ -23,6 +24,7 @@ export const appRouter = createTRPCRouter({
   steps: stepRouter,
   comments: commentRouter,
   favorites: favoriteRouter,
+  units: unitRouter,
 
   // Junction / Relationship Routers
   recipeIngredients: recipeIngredientRouter,

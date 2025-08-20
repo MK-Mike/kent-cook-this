@@ -2,13 +2,8 @@
 import { relations } from "drizzle-orm";
 import { sqliteTableCreator, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { recipeIngredients, stepIngredients } from "./recipeData";
+import { InferSelectModel } from "drizzle-orm";
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
 export const createTable = sqliteTableCreator(
   (name) => `kent-cook-this_${name}`,
 );
@@ -25,6 +20,7 @@ export const ingredients = createTable(
 // UNIT CONVERSION & SCALING TABLES
 // ----------------------------------------------------
 
+export const unitTypeEnum = ["mass", "volume", "count"];
 // UNITS (enums stored as text with CHECK constraints)
 export const units = createTable(
   "units",
@@ -32,7 +28,7 @@ export const units = createTable(
     id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
     name: d.text({ length: 50 }).notNull(),
     abbreviation: d.text({ length: 10 }).notNull(),
-    type: d.text().notNull(), // 'volume' or 'mass'
+    type: d.text(unitTypeEnum).notNull(),
     factorToBase: d.real().notNull(),
     system: d.text().notNull(), // 'metric' or 'imperial'
     subUnitId: d
@@ -98,3 +94,10 @@ export const ingredientDensitiesRelations = relations(
     }),
   }),
 );
+
+// export types
+export type Ingredient = InferSelectModel<typeof ingredients>;
+export type Unit = InferSelectModel<typeof units>;
+export type IngredientDensity = InferSelectModel<typeof ingredientDensities>;
+export type RecipeIngredient = InferSelectModel<typeof recipeIngredients>;
+export type StepIngredient = InferSelectModel<typeof stepIngredients>;
