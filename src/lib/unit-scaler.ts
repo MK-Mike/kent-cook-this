@@ -1,96 +1,95 @@
-import { api } from "~/trpc/server";
-import { type Ingredient, UnitType } from "./types2";
-import type { SelectUnit as Unit } from "~/server/db/zodSchemas/ingredients";
+import { db } from "~/server/db/index"; // Your Drizzle DB instance
+import { units, ingredientDensities } from "~/server/db/schema"; // Your Drizzle schema
+import { eq } from "drizzle-orm";
 
-const units: Unit[] = await api.units.getAll();
-
-export function convertUnits(
+/**
+ * @description
+ * Converts a quantity of a specific ingredient from one unit to another.
+ * This function handles two primary conversion scenarios:
+ * 1. Same-Type Conversion: Converts between units of the same type, such as
+ *    volume-to-volume (e.g., cups to milliliters) or mass-to-mass (e.g., ounces to grams).
+ * 2. Cross-Type Conversion: Converts between volume and mass, which requires
+ *    the ingredient's specific density (e.g., cups of flour to grams of flour).
+ *
+ * @param quantity The numerical value of the quantity to convert (e.g., 2 for 2 cups).
+ * @param fromUnitId The database ID of the unit you are converting FROM.
+ * @param toUnitId The database ID of the unit you are converting TO.
+ * @param ingredientId The database ID of the ingredient being converted. This is
+ *                     essential for accurate volume-to-mass conversions.
+ *
+ * @returns A Promise that resolves to a `number` representing the converted quantity.
+ *
+ * @throws Will throw an error if a unit ID is not found in the database.
+ * @throws Will throw an error if a volume-to-mass conversion is attempted for an
+ *         ingredient that does not have a density defined in the `ingredientDensities` table.
+ *
+ * @example
+ * // Convert 2 cups of flour (ingredientId: 12) to grams (unitId: 6)
+ * const gramsOfFlour = await convertIngredientUnit(2, 7, 6, 12);
+ * console.log(gramsOfFlour); // Outputs the equivalent grams
+ */
+export async function convertIngredientUnit(
   quantity: number,
-  fromUnit: Unit,
-  toUnit: Unit,
-  densityGPerMl?: number,
-): number {
-  if (fromUnit.type !== toUnit.type) {
+  fromUnitId: number,
+  toUnitId: number,
+  ingredientId: number,
+): Promise<number> {
+  // Fetch all required data in parallel for efficiency
+  const [fromUnit, toUnit, densityRecord] = await Promise.all([
+    db.select().from(units).where(eq(units.id, fromUnitId)).get(),
+    db.select().from(units).where(eq(units.id, toUnitId)).get(),
+    db
+      .select({ densityGPerMl: ingredientDensities.densityGPerMl })
+      .from(ingredientDensities)
+      .where(eq(ingredientDensities.ingredientId, ingredientId))
+      .get(),
+  ]);
+
+  // --- Input Validation ---
+  if (!fromUnit || !toUnit) {
+    throw new Error("One or both unit IDs were not found in the database.");
+  }
+
+  // --- Logic Case 1: Same-Type Conversion (Volume -> Volume or Mass -> Mass) ---
+  // This is the simplest case and does not require density.
+  if (fromUnit.type === toUnit.type) {
+    // Convert the 'from' quantity to the base unit (ml or g),
+    // then convert from the base unit to the 'to' unit.
+    const quantityInBase = quantity * fromUnit.factorToBase;
+    return quantityInBase / toUnit.factorToBase;
+  }
+
+  // --- Logic Case 2: Cross-Type Conversion (Volume <-> Mass) ---
+  // This requires the ingredient's density.
+  if (!densityRecord) {
     throw new Error(
-      `Cannot convert between different unit types: ${fromUnit.type} and ${toUnit.type}`,
+      `Cannot convert between volume and mass for ingredient ID ${ingredientId}: No density is defined.`,
     );
   }
+  const { densityGPerMl } = densityRecord;
 
-  // Handle volume to mass conversion if density is provided
+  // Sub-case 2a: Volume to Mass (e.g., cups -> grams)
   if (fromUnit.type === "volume" && toUnit.type === "mass") {
-    if (!densityGPerMl) {
-      throw new Error(
-        `Density is required to convert from volume (${fromUnit.name}) to mass (${toUnit.name})`,
-      );
-    }
-    // Convert volume to ml first, then to grams
-    const quantityMl = quantity * fromUnit.mlPerUnit;
-    const quantityG = quantityMl * densityGPerMl;
-    return quantityG / toUnit.gPerUnit;
+    // 1. Convert source volume (e.g., cups) to base volume (ml)
+    const totalMilliliters = quantity * fromUnit.factorToBase;
+    // 2. Convert base volume (ml) to base mass (g) using density
+    const totalGrams = totalMilliliters * densityGPerMl;
+    // 3. Convert base mass (g) to the target mass unit (e.g., oz)
+    return totalGrams / toUnit.factorToBase;
   }
 
-  // Handle mass to volume conversion if density is provided
+  // Sub-case 2b: Mass to Volume (e.g., grams -> cups)
   if (fromUnit.type === "mass" && toUnit.type === "volume") {
-    if (!densityGPerMl) {
-      throw new Error(
-        `Density is required to convert from mass (${fromUnit.name}) to volume (${toUnit.name})`,
-      );
-    }
-    // Convert mass to grams first, then to ml
-    const quantityG = quantity * fromUnit.gPerUnit;
-    const quantityMl = quantityG / densityGPerMl;
-    return quantityMl / toUnit.mlPerUnit;
+    // 1. Convert source mass (e.g., oz) to base mass (g)
+    const totalGrams = quantity * fromUnit.factorToBase;
+    // 2. Convert base mass (g) to base volume (ml) using density
+    const totalMilliliters = totalGrams / densityGPerMl;
+    // 3. Convert base volume (ml) to the target volume unit (e.g., cups)
+    return totalMilliliters / toUnit.factorToBase;
   }
 
-  // Standard conversion within the same unit type (mass, volume, count)
-  if (fromUnit.type === "mass") {
-    const quantityG = quantity * fromUnit.gPerUnit;
-    return quantityG / toUnit.gPerUnit;
-  } else if (fromUnit.type === "volume") {
-    const quantityMl = quantity * fromUnit.mlPerUnit;
-    return quantityMl / toUnit.mlPerUnit;
-  } else if (fromUnit.type === "count") {
-    // For count units, direct conversion if a ratio exists, otherwise 1:1
-    if (fromUnit.unitsPerUnit && toUnit.unitsPerUnit) {
-      return (quantity * fromUnit.unitsPerUnit) / toUnit.unitsPerUnit;
-    }
-    return quantity; // Assume 1:1 if no specific conversion factor
-  }
-
-  return quantity; // Should not reach here if types are handled
-}
-
-export function scaleIngredients(
-  ingredients: Ingredient[],
-  originalServings: number,
-  targetServings: number,
-): Ingredient[] {
-  if (originalServings <= 0 || targetServings <= 0) {
-    throw new Error("Servings must be positive numbers.");
-  }
-
-  const scaleFactor = targetServings / originalServings;
-
-  return ingredients.map((ingredient) => {
-    const scaledQuantity = ingredient.quantity * scaleFactor;
-    return { ...ingredient, quantity: scaledQuantity };
-  });
-}
-
-export function formatQuantity(quantity: number): string {
-  if (quantity === 0) return "0";
-  if (quantity < 1) {
-    // For quantities less than 1, show up to 2 decimal places or fractions
-    if (quantity === 0.25) return "1/4";
-    if (quantity === 0.33) return "1/3";
-    if (quantity === 0.5) return "1/2";
-    if (quantity === 0.66) return "2/3";
-    if (quantity === 0.75) return "3/4";
-    return quantity.toFixed(2).replace(/\.?0+$/, ""); // Remove trailing zeros
-  }
-  // For quantities 1 or greater, show up to 2 decimal places if not whole
-  if (quantity % 1 === 0) {
-    return quantity.toString();
-  }
-  return quantity.toFixed(2).replace(/\.?0+$/, ""); // Remove trailing zeros
+  // Fallback error for unexpected scenarios
+  throw new Error(
+    `An unexpected conversion scenario occurred from ${fromUnit.type} to ${toUnit.type}.`,
+  );
 }
