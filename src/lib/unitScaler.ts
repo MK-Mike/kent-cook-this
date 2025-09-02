@@ -7,7 +7,7 @@ type UnitRow = {
   id: number;
   name: string;
   abbreviation: string;
-  type: "mass" | "volume";
+  type: string;
   factorToBase: number;
   system: "metric" | "imperial";
   subUnitId: number | null;

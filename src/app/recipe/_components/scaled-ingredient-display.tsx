@@ -14,11 +14,12 @@ import { useUnitSystem } from "~/hooks/use-unit-system";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
 import { api } from "~/trpc/react";
-import type { RecipeIngredient } from "recipe-card/lib/types2";
 import { formatQuantity } from "recipe-card/lib/unit-scaler";
-
+import { scaleQuantity } from "~/lib/unitScaler";
 type Recipe = inferRouterOutputs<AppRouter>["recipes"]["getById"];
-type ScaledResult = inferRouterOutputs<AppRouter>["units"]["convert"];
+type ScaledResult = inferRouterOutputs<AppRouter>["units"]["scale"];
+type RecipeIngredient =
+  inferRouterOutputs<AppRouter>["ingredients"]["getAll"][0];
 interface ScaledIngredientDisplayProps {
   recipe: Recipe;
 }
@@ -47,7 +48,8 @@ export function ScaledIngredientDisplay({
           if (ing.unitId === null || !allUnits) {
             // Handle ingredients with no unit or if units are still loading
             return {
-              ...ing,
+              id: ing.ingredient.id,
+              name: ing.ingredient.name,
               scaled: {
                 value: ing.quantity,
                 unit: {
@@ -65,12 +67,16 @@ export function ScaledIngredientDisplay({
           }
           try {
             const multiplier = currentServings / recipe.servings;
-            const result = await api.units.scale({
-              quantity: ing.quantity,
-              unitId: ing.unitId,
+            const result = await scaleQuantity(
+              ing.quantity,
+              ing.unitId,
               multiplier,
-            });
-            return { ...ing, scaled: result };
+            );
+            return {
+              id: ing.ingredient.id,
+              name: ing.ingredient.name,
+              scaled: result,
+            };
           } catch (error) {
             console.error(`Error scaling ${ing.ingredient.name}:`, error);
             return { ...ing, scaled: null }; // Handle error state
@@ -82,9 +88,15 @@ export function ScaledIngredientDisplay({
 
     if (allUnits) {
       // Only run scaling if units data is available
-      scaleAllIngredients();
+      void scaleAllIngredients();
     }
-  }, [currentServings, recipe.ingredients, recipe.servings, allUnits]);
+  }, [
+    recipe,
+    currentServings,
+    recipe?.ingredients,
+    recipe?.servings,
+    allUnits,
+  ]);
 
   const renderQuantity = (scaled: ScaledResult | null) => {
     if (!scaled) {
@@ -152,7 +164,9 @@ export function ScaledIngredientDisplay({
         </Select>
       </div>
 
-      <h3 className="text-xl font-bold">Ingredients ({servings} Servings)</h3>
+      <h3 className="text-xl font-bold">
+        Ingredients ({currentServings} Servings)
+      </h3>
       <ul className="space-y-2">
         {scaledIngredients?.map((ingredient, index) => (
           <li key={index} className="flex items-center gap-2">

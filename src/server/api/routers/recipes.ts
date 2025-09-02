@@ -30,7 +30,7 @@ const updateRecipeSchema = createRecipeSchema.partial().extend({
 const recipeIngredientInputSchema = z.object({
   ingredientId: z.number(),
   quantity: z.number(),
-  unitId: z.number().nullable(),
+  unitId: z.number(),
 });
 
 // NEW: Updated schema for a single step to include its ingredients
