@@ -207,19 +207,6 @@ export default function NewRecipePage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="tagNames"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags (comma-separated)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., vegan, healthy, quick" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
                   name="categoryIds"
                   render={({ field }) => (
                     <FormItem>
@@ -229,7 +216,7 @@ export default function NewRecipePage() {
                         onValueChange={(value) => field.onChange(value ? [Number(value)] : [])}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
                         </FormControl>
@@ -241,6 +228,19 @@ export default function NewRecipePage() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tagNames"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags (comma-separated)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., vegan, healthy, quick" {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
