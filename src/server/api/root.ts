@@ -10,6 +10,7 @@ import { recipeIngredientRouter } from "~/server/api/routers/recipeIngredients";
 import { recipeTagRouter } from "~/server/api/routers/recipeTags";
 import { recipeCategoryRouter } from "~/server/api/routers/recipeCategories";
 import { stepIngredientRouter } from "~/server/api/routers/stepIngredients";
+import { unitRouter } from "~/server/api/routers/units";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 //export main tRPC router
@@ -29,6 +30,7 @@ export const appRouter = createTRPCRouter({
   recipeTags: recipeTagRouter,
   recipeCategories: recipeCategoryRouter,
   stepIngredients: stepIngredientRouter,
+  units: unitRouter,
 });
 
 // export type definition of API

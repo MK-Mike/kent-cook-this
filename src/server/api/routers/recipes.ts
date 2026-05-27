@@ -154,6 +154,34 @@ export const recipeRouter = createTRPCRouter({
       });
     }),
 
+  getByCategorySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.recipes.findMany({
+        where: exists(
+          ctx.db
+            .select()
+            .from(recipeCategories)
+            .innerJoin(
+              categories,
+              eq(categories.id, recipeCategories.categoryId),
+            )
+            .where(
+              and(
+                eq(recipeCategories.recipeId, recipes.id),
+                eq(categories.slug, input.slug),
+              ),
+            ),
+        ),
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
+      });
+    }),
+
   getByTag: publicProcedure
     .input(z.object({ tag: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -167,6 +195,31 @@ export const recipeRouter = createTRPCRouter({
               and(
                 eq(recipeTags.recipeId, recipes.id),
                 eq(tags.name, input.tag),
+              ),
+            ),
+        ),
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
+      });
+    }),
+
+  getByTagSlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.recipes.findMany({
+        where: exists(
+          ctx.db
+            .select()
+            .from(recipeTags)
+            .innerJoin(tags, eq(tags.id, recipeTags.tagId))
+            .where(
+              and(
+                eq(recipeTags.recipeId, recipes.id),
+                eq(tags.slug, input.slug),
               ),
             ),
         ),
