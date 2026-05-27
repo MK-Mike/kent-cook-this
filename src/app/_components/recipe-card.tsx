@@ -130,14 +130,14 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
                     alt={recipe.author.name}
                   />
                   <AvatarFallback className="text-xs">
-                    {recipe.author.name
+                    {(recipe.author.name ?? "")
                       .split(" ")
-                      .map((n) => n[0])
+                      .map((n: string) => n[0])
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-muted-foreground text-sm">
-                  {recipe.author.name}
+                  {recipe.author.name ?? "Unknown"}
                 </span>
               </div>
             </div>

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq, desc, and, exists, like, inArray } from "drizzle-orm";
+import { eq, desc, and, like, inArray } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import {
   categories,
@@ -130,20 +130,40 @@ export const recipeRouter = createTRPCRouter({
     .input(z.object({ category: z.string() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.query.recipes.findMany({
-        where: exists(
+        where: inArray(
+          recipes.id,
           ctx.db
-            .select()
+            .select({ id: recipeCategories.recipeId })
             .from(recipeCategories)
             .innerJoin(
               categories,
               eq(categories.id, recipeCategories.categoryId),
             )
-            .where(
-              and(
-                eq(recipeCategories.recipeId, recipes.id),
-                eq(categories.name, input.category),
-              ),
-            ),
+            .where(eq(categories.name, input.category)),
+        ),
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
+      });
+    }),
+
+  getByCategorySlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.recipes.findMany({
+        where: inArray(
+          recipes.id,
+          ctx.db
+            .select({ id: recipeCategories.recipeId })
+            .from(recipeCategories)
+            .innerJoin(
+              categories,
+              eq(categories.id, recipeCategories.categoryId),
+            )
+            .where(eq(categories.slug, input.slug)),
         ),
         with: {
           author: true,
@@ -158,17 +178,34 @@ export const recipeRouter = createTRPCRouter({
     .input(z.object({ tag: z.string() }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.query.recipes.findMany({
-        where: exists(
+        where: inArray(
+          recipes.id,
           ctx.db
-            .select()
+            .select({ id: recipeTags.recipeId })
             .from(recipeTags)
             .innerJoin(tags, eq(tags.id, recipeTags.tagId))
-            .where(
-              and(
-                eq(recipeTags.recipeId, recipes.id),
-                eq(tags.name, input.tag),
-              ),
-            ),
+            .where(eq(tags.name, input.tag)),
+        ),
+        with: {
+          author: true,
+          ingredients: { with: { ingredient: true, unit: true } },
+          steps: true,
+          recipeTags: { with: { tag: true } },
+        },
+      });
+    }),
+
+  getByTagSlug: publicProcedure
+    .input(z.object({ slug: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.query.recipes.findMany({
+        where: inArray(
+          recipes.id,
+          ctx.db
+            .select({ id: recipeTags.recipeId })
+            .from(recipeTags)
+            .innerJoin(tags, eq(tags.id, recipeTags.tagId))
+            .where(eq(tags.slug, input.slug)),
         ),
         with: {
           author: true,
@@ -204,37 +241,29 @@ export const recipeRouter = createTRPCRouter({
 
       if (input.tags?.length) {
         conditions.push(
-          exists(
+          inArray(
+            recipes.id,
             ctx.db
-              .select()
+              .select({ id: recipeTags.recipeId })
               .from(recipeTags)
               .innerJoin(tags, eq(tags.id, recipeTags.tagId))
-              .where(
-                and(
-                  eq(recipeTags.recipeId, recipes.id),
-                  inArray(tags.name, input.tags),
-                ),
-              ),
+              .where(inArray(tags.name, input.tags)),
           ),
         );
       }
 
       if (input.categories?.length) {
         conditions.push(
-          exists(
+          inArray(
+            recipes.id,
             ctx.db
-              .select()
+              .select({ id: recipeCategories.recipeId })
               .from(recipeCategories)
               .innerJoin(
                 categories,
                 eq(categories.id, recipeCategories.categoryId),
               )
-              .where(
-                and(
-                  eq(recipeCategories.recipeId, recipes.id),
-                  inArray(categories.name, input.categories),
-                ),
-              ),
+              .where(inArray(categories.name, input.categories)),
           ),
         );
       }
