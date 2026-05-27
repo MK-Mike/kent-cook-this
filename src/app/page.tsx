@@ -8,11 +8,11 @@ import { RecipeFilters } from "./_components/recipe-filters";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: {
+  searchParams: Promise<{
     q?: string;
     categories?: string;
     tags?: string;
-  };
+  }>;
 }) {
   const allRecipes = await api.recipes.getAll();
   const allCategories = await api.categories.getAll();
@@ -36,8 +36,8 @@ export default async function Home({
 
   return (
     <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center">
-        <div className="container mx-auto p-4">
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <div className="container mx-auto">
           <div className="mb-6 flex flex-col items-center gap-4">
             <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
               Family Recipes
@@ -75,7 +75,7 @@ export default async function Home({
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </HydrateClient>
   );
 }
