@@ -1,17 +1,8 @@
 //schema.ts
 import { relations } from "drizzle-orm";
-import { sqliteTableCreator, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { uniqueIndex } from "drizzle-orm/sqlite-core";
+import { createTable } from "./base";
 import { recipeIngredients, stepIngredients } from "./recipeData";
-
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
-export const createTable = sqliteTableCreator(
-  (name) => `kent-cook-this_${name}`,
-);
 // INGREDIENTS MASTER LIST
 export const ingredients = createTable(
   "ingredients",

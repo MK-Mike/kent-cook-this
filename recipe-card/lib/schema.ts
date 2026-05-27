@@ -32,7 +32,7 @@ export const categories = pgTable("categories", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
-  parentId: integer("parent_id").references(() => categories.id), // Self-referencing for subcategories
+  parentId: integer("parent_id").references((): any => categories.id), // Self-referencing for subcategories
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
@@ -69,7 +69,7 @@ export const units = pgTable("units", {
   type: unitTypeEnum("type").notNull(), // e.g., 'mass', 'volume', 'count'
   factorToBase: integer("factor_to_base").notNull(), // Factor to convert to a base unit (e.g., 1000 for kg to g)
   isMetric: boolean("is_metric").notNull(),
-  subUnitId: integer("sub_unit_id").references(() => units.id), // For units like 'lb' having 'oz' as sub-unit
+  subUnitId: integer("sub_unit_id").references((): any => units.id), // For units like 'lb' having 'oz' as sub-unit
   subUnitScale: integer("sub_unit_scale"), // e.g., 16 for 1 lb = 16 oz
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
@@ -274,11 +274,7 @@ export const recipeTagsRelations = relations(recipeTags, ({ one }) => ({
 
 // Schemas for validation
 export const ingredientSchema = z.object({
-  quantity: z
-    .number()
-    .min(0, "Quantity must be a positive number")
-    .nullable()
-    .transform((val) => (val === null ? 0 : val)),
+  quantity: z.number().min(0, "Quantity must be a positive number"),
   unit: z.string().min(1, "Unit is required"),
   name: z.string().min(1, "Ingredient name is required"),
   notes: z.string().optional(),
