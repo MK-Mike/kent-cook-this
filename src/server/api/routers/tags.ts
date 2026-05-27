@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { tags, tagTypeEnum } from "~/server/db/schema";
+import { tags, tagTypeEnum, recipeTags } from "~/server/db/schema";
 
 const createTagSchema = z.object({
   name: z.string().min(1),
@@ -53,4 +53,19 @@ export const tagRouter = createTRPCRouter({
         where: eq(tags.type, input.type),
       });
     }),
+
+  /**
+   * Returns only tags that have at least one recipe associated with them.
+   * Used by the sidebar to avoid showing empty tags.
+   */
+  getActive: publicProcedure.query(async ({ ctx }) => {
+    const activeTagIds = ctx.db
+      .select({ id: recipeTags.tagId })
+      .from(recipeTags)
+      .groupBy(recipeTags.tagId);
+
+    return await ctx.db.query.tags.findMany({
+      where: inArray(tags.id, activeTagIds),
+    });
+  }),
 });

@@ -27,8 +27,8 @@ import { api } from "~/trpc/react"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const { data: categories = [] } = api.categories.getAll.useQuery()
-  const { data: tags = [] } = api.tags.getAll.useQuery()
+  const { data: categories = [] } = api.categories.getActive.useQuery()
+  const { data: tags = [] } = api.tags.getActive.useQuery()
 
   return (
     <Sidebar {...props}>
