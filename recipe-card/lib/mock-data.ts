@@ -757,7 +757,7 @@ export const mockRecipes: Recipe[] = [
     image: "/images/mediterranean-quinoa-bowl.jpg",
     servings: 2,
     time: "25 minutes",
-    author: mockAuthors[0],
+    author: mockAuthors[0]!,
     rating: 4.5,
     tags: ["healthy", "vegetarian", "quick"],
     ingredients: [
@@ -792,6 +792,27 @@ export const mockRecipes: Recipe[] = [
         image: "/images/steps/quinoa_bowl_assemble.jpg",
       },
     ],
+    prepTimeMinutes: 15,
+    cookTimeMinutes: 10,
+    instructions: [
+      {
+        description:
+          "Rinse quinoa thoroughly under cold water. In a small saucepan, combine quinoa and water. Bring to a boil, then reduce heat to low, cover, and simmer for 15 minutes, or until all water is absorbed. Let stand for 5 minutes, then fluff with a fork.",
+        image: "/images/steps/quinoa_prep.jpg",
+      },
+      {
+        description:
+          "While quinoa cooks, prepare the dressing: In a small bowl, whisk together olive oil, lemon juice, dried oregano, salt, and pepper.",
+        image: "/images/steps/dressing.jpg",
+      },
+      {
+        description:
+          "In a large bowl, combine cooked quinoa, diced cucumber, cherry tomatoes, red onion, Kalamata olives, feta cheese, and fresh parsley. Pour the dressing over the salad and toss gently to combine. Serve immediately or chill for later.",
+        image: "/images/steps/quinoa_bowl_assemble.jpg",
+      },
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "2",
@@ -801,7 +822,7 @@ export const mockRecipes: Recipe[] = [
     image: "/images/chocolate-cake.jpg",
     servings: 12,
     time: "1 hour 15 minutes",
-    author: mockAuthors[1],
+    author: mockAuthors[1]!,
     rating: 5,
     tags: ["dessert", "baking", "chocolate"],
     ingredients: [
@@ -847,6 +868,40 @@ export const mockRecipes: Recipe[] = [
         image: null,
       },
     ],
+    prepTimeMinutes: 30,
+    cookTimeMinutes: 45,
+    instructions: [
+      {
+        description: "Preheat oven to 350°F (175°C). Grease and flour two 9-inch round baking pans.",
+        image: "/images/steps/cake_preheat.jpg",
+      },
+      {
+        description:
+          "In a large bowl, whisk together flour, cocoa powder, sugar, baking soda, baking powder, and salt.",
+        image: "/images/steps/cake_dry_mix.jpg",
+      },
+      {
+        description:
+          "In a separate bowl, whisk together buttermilk, oil, eggs, and vanilla extract. Pour the wet ingredients into the dry ingredients and mix until just combined.",
+        image: "/images/steps/cake_wet_mix.jpg",
+      },
+      {
+        description:
+          "Carefully stir in the hot water (or coffee) until the batter is smooth. The batter will be thin. Divide evenly between the prepared pans.",
+        image: null,
+      },
+      {
+        description:
+          "Bake for 30-35 minutes, or until a wooden skewer inserted into the center comes out clean. Let cool in the pans for 10 minutes before inverting onto a wire rack to cool completely.",
+        image: "/images/steps/cake_bake.jpg",
+      },
+      {
+        description: "Frost with your favorite chocolate frosting.",
+        image: null,
+      },
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "3",
@@ -856,7 +911,7 @@ export const mockRecipes: Recipe[] = [
     image: "/images/shrimp-pasta.jpg",
     servings: 4,
     time: "30 minutes",
-    author: mockAuthors[2],
+    author: mockAuthors[2]!,
     rating: 4.8,
     tags: ["seafood", "pasta", "quick", "dinner"],
     ingredients: [
@@ -898,6 +953,36 @@ export const mockRecipes: Recipe[] = [
         image: null,
       },
     ],
+    prepTimeMinutes: 15,
+    cookTimeMinutes: 15,
+    instructions: [
+      {
+        description:
+          "Cook pasta according to package directions until al dente. Reserve 1/2 cup of pasta water before draining.",
+        image: "/images/steps/pasta_cook.jpg",
+      },
+      {
+        description:
+          "While pasta cooks, heat olive oil in a large skillet over medium heat. Add shrimp and cook for 2-3 minutes per side, until pink and opaque. Remove shrimp from skillet and set aside.",
+        image: null,
+      },
+      {
+        description:
+          "In the same skillet, add minced garlic and red pepper flakes (if using). Cook for 1 minute until fragrant. Stir in chicken broth and heavy cream. Bring to a simmer and cook for 3-5 minutes, until sauce slightly thickens.",
+        image: "/images/steps/garlic_butter.jpg",
+      },
+      {
+        description:
+          "Stir in grated Parmesan cheese and chopped parsley. Add the cooked shrimp and drained pasta to the skillet. Toss to coat, adding a splash of reserved pasta water if needed to reach desired consistency. Season with salt and pepper to taste.",
+        image: "/images/steps/pasta_serve.jpg",
+      },
+      {
+        description: "Serve immediately and enjoy!",
+        image: null,
+      },
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "4",
@@ -906,7 +991,7 @@ export const mockRecipes: Recipe[] = [
     image: "/images/beef-stir-fry.jpg",
     servings: 4,
     time: "20 minutes",
-    author: mockAuthors[0],
+    author: mockAuthors[0]!,
     rating: 4.2,
     tags: ["spicy", "asian", "dinner", "quick"],
     ingredients: [
@@ -954,6 +1039,40 @@ export const mockRecipes: Recipe[] = [
         image: null,
       },
     ],
+    prepTimeMinutes: 10,
+    cookTimeMinutes: 10,
+    instructions: [
+      {
+        description: "In a bowl, toss sliced beef with soy sauce and cornstarch. Set aside.",
+        image: null,
+      },
+      {
+        description:
+          "Heat 1 tbsp sesame oil in a large skillet or wok over high heat. Add beef and stir-fry until browned, about 3-4 minutes. Remove beef from skillet and set aside.",
+        image: null,
+      },
+      {
+        description:
+          "Add remaining 1 tbsp sesame oil to the skillet. Add broccoli and carrots, stir-fry for 3-4 minutes until slightly tender-crisp. Add red bell pepper and snow peas, stir-fry for another 2 minutes.",
+        image: null,
+      },
+      {
+        description: "Add minced garlic and grated ginger to the vegetables, stir-fry for 1 minute until fragrant.",
+        image: null,
+      },
+      {
+        description:
+          "In a small bowl, whisk together chicken broth, Sriracha, and honey. Pour sauce over vegetables and bring to a simmer.",
+        image: null,
+      },
+      {
+        description:
+          "Return beef to the skillet and toss to coat with the sauce and vegetables. Cook for 1-2 minutes until heated through. Serve immediately with rice or noodles.",
+        image: null,
+      },
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "5",
@@ -963,7 +1082,7 @@ export const mockRecipes: Recipe[] = [
     image: "/images/buddha-bowl.jpg",
     servings: 2,
     time: "40 minutes",
-    author: mockAuthors[1],
+    author: mockAuthors[1]!,
     rating: 4.7,
     tags: ["vegan", "healthy", "lunch", "meal prep"],
     ingredients: [
@@ -1003,6 +1122,31 @@ export const mockRecipes: Recipe[] = [
         image: null,
       },
     ],
+    prepTimeMinutes: 25,
+    cookTimeMinutes: 15,
+    instructions: [
+      {
+        description:
+          "Preheat oven to 400°F (200°C). On a baking sheet, toss cubed sweet potato and chickpeas with olive oil, smoked paprika, cumin, salt, and pepper. Roast for 25-30 minutes, flipping halfway, until tender and slightly crispy.",
+        image: null,
+      },
+      {
+        description:
+          "While vegetables roast, prepare the tahini dressing: In a small bowl, whisk together tahini, lemon juice, water, and minced garlic until smooth and creamy. Add more water if needed to reach desired consistency.",
+        image: null,
+      },
+      {
+        description:
+          "Assemble the bowls: Divide mixed greens between two bowls. Top with roasted sweet potatoes and chickpeas, sliced cucumber, and cherry tomatoes.",
+        image: null,
+      },
+      {
+        description: "Drizzle generously with the tahini dressing. Serve immediately.",
+        image: null,
+      },
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
   {
     id: "6",
@@ -1011,7 +1155,7 @@ export const mockRecipes: Recipe[] = [
     image: "/images/exploding-chocolate-pudding.jpg",
     servings: 4,
     time: "45 minutes",
-    author: mockAuthors[2],
+    author: mockAuthors[2]!,
     rating: 4.9,
     tags: ["dessert", "chocolate", "comfort food"],
     ingredients: [
@@ -1066,6 +1210,49 @@ export const mockRecipes: Recipe[] = [
         image: null,
       },
     ],
+    prepTimeMinutes: 20,
+    cookTimeMinutes: 25,
+    instructions: [
+      {
+        description: "Preheat oven to 350°F (175°C). Lightly grease an 8x8 inch (20x20 cm) baking dish.",
+        image: null,
+      },
+      {
+        description:
+          "In a medium bowl, sift together flour, granulated sugar, 2 tbsp cocoa powder, baking powder, and salt.",
+        image: "/images/steps/pudding_sift.jpg",
+      },
+      {
+        description:
+          "In a separate bowl, whisk together milk, melted butter, and vanilla extract. Pour the wet ingredients into the dry ingredients and mix until just combined. Do not overmix.",
+        image: "/images/steps/pudding_batter.jpg",
+      },
+      {
+        description: "Pour the batter evenly into the prepared baking dish.",
+        image: "/images/steps/pudding_pour.jpg",
+      },
+      {
+        description:
+          "In a small bowl, whisk together brown sugar and 1/4 cup cocoa powder. Sprinkle this mixture evenly over the batter in the baking dish.",
+        image: "/images/steps/pudding_topping.jpg",
+      },
+      {
+        description: "Carefully pour the hot water over the top of the sugar-cocoa mixture. Do NOT stir.",
+        image: null,
+      },
+      {
+        description:
+          "Bake for 30-35 minutes, or until the top is set and the sauce is bubbling around the edges. The center will still be soft. Alternatively, you can microwave it for 8-10 minutes on high power until set.",
+        image: "/images/steps/pudding_microwave.jpg",
+      },
+      {
+        description:
+          "Let cool for a few minutes before serving. The sauce will be at the bottom. Serve warm with ice cream or whipped cream.",
+        image: null,
+      },
+    ],
+    createdAt: new Date(),
+    updatedAt: new Date(),
   },
 ]
 

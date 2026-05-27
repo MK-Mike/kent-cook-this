@@ -17,6 +17,7 @@ import { recipeStore } from "@/lib/recipe-store"
 import { generateId } from "@/lib/utils"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { mockAuthors } from "@/lib/mock-data"
+import type { Recipe } from "@/lib/types"
 
 export default function NewRecipePage() {
   const router = useRouter()
@@ -38,11 +39,17 @@ export default function NewRecipePage() {
 
   async function onSubmit(values: RecipeFormValues) {
     try {
-      const newRecipe = {
-        id: generateId(), // Generate a unique ID for the new recipe
+      const newRecipe: Recipe = {
+        id: generateId(),
         ...values,
-        author: mockAuthors.find((author) => author.id === values.authorId) || mockAuthors[0], // Assign full author object
-        rating: null, // New recipes start with no rating
+        image: values.image || "",
+        author: mockAuthors.find((author) => author.id === values.authorId) || mockAuthors[0],
+        prepTimeMinutes: 0,
+        cookTimeMinutes: 0,
+        instructions: values.steps.map((s) => ({ description: s.description, image: s.image })),
+        rating: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }
       recipeStore.add(newRecipe)
       toast.success("Recipe added successfully!")

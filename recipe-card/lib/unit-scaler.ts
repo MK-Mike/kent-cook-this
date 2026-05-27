@@ -1,8 +1,8 @@
-import { type Unit, type Ingredient, UnitType, getAllUnits } from "./types"
+import { type UnitConversion, type RecipeIngredient, type IngredientDensityData, UnitType, getAllUnitsForConversion, getIngredientDensityData } from "./types"
 
-const units: Unit[] = getAllUnits()
+const units: UnitConversion[] = getAllUnitsForConversion()
 
-export function convertUnits(quantity: number, fromUnit: Unit, toUnit: Unit, densityGPerMl?: number): number {
+export function convertUnits(quantity: number, fromUnit: UnitConversion, toUnit: UnitConversion, densityGPerMl?: number): number {
   if (fromUnit.type !== toUnit.type) {
     throw new Error(`Cannot convert between different unit types: ${fromUnit.type} and ${toUnit.type}`)
   }
@@ -13,9 +13,9 @@ export function convertUnits(quantity: number, fromUnit: Unit, toUnit: Unit, den
       throw new Error(`Density is required to convert from volume (${fromUnit.name}) to mass (${toUnit.name})`)
     }
     // Convert volume to ml first, then to grams
-    const quantityMl = quantity * fromUnit.mlPerUnit
+    const quantityMl = quantity * fromUnit.mlPerUnit!
     const quantityG = quantityMl * densityGPerMl
-    return quantityG / toUnit.gPerUnit
+    return quantityG / toUnit.gPerUnit!
   }
 
   // Handle mass to volume conversion if density is provided
@@ -24,18 +24,18 @@ export function convertUnits(quantity: number, fromUnit: Unit, toUnit: Unit, den
       throw new Error(`Density is required to convert from mass (${fromUnit.name}) to volume (${toUnit.name})`)
     }
     // Convert mass to grams first, then to ml
-    const quantityG = quantity * fromUnit.gPerUnit
+    const quantityG = quantity * fromUnit.gPerUnit!
     const quantityMl = quantityG / densityGPerMl
-    return quantityMl / toUnit.mlPerUnit
+    return quantityMl / toUnit.mlPerUnit!
   }
 
   // Standard conversion within the same unit type (mass, volume, count)
   if (fromUnit.type === UnitType.Mass) {
-    const quantityG = quantity * fromUnit.gPerUnit
-    return quantityG / toUnit.gPerUnit
+    const quantityG = quantity * fromUnit.gPerUnit!
+    return quantityG / toUnit.gPerUnit!
   } else if (fromUnit.type === UnitType.Volume) {
-    const quantityMl = quantity * fromUnit.mlPerUnit
-    return quantityMl / toUnit.mlPerUnit
+    const quantityMl = quantity * fromUnit.mlPerUnit!
+    return quantityMl / toUnit.mlPerUnit!
   } else if (fromUnit.type === UnitType.Count) {
     // For count units, direct conversion if a ratio exists, otherwise 1:1
     if (fromUnit.unitsPerUnit && toUnit.unitsPerUnit) {
@@ -48,10 +48,10 @@ export function convertUnits(quantity: number, fromUnit: Unit, toUnit: Unit, den
 }
 
 export function scaleIngredients(
-  ingredients: Ingredient[],
+  ingredients: RecipeIngredient[],
   originalServings: number,
   targetServings: number,
-): Ingredient[] {
+): RecipeIngredient[] {
   if (originalServings <= 0 || targetServings <= 0) {
     throw new Error("Servings must be positive numbers.")
   }

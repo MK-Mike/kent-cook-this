@@ -22,7 +22,7 @@ export default function SidebarLayout() {
 
   const breadcrumbs = useMemo(() => {
     const pathSegments = pathname.split("/").filter(Boolean)
-    const crumbs = [{ name: "Home", href: "/" }]
+    const crumbs: { name: string; href: string; isCurrent?: boolean }[] = [{ name: "Home", href: "/" }]
 
     if (pathSegments.length > 0) {
       let currentPath = ""
@@ -41,11 +41,11 @@ export default function SidebarLayout() {
             return // Skip next segment as it's part of the recipe ID
           }
         } else if (segment === "category" && pathSegments[index + 1]) {
-          name = `Category: ${decodeURIComponent(pathSegments[index + 1]).replace(/-/g, " ")}`
+          name = `Category: ${decodeURIComponent(pathSegments[index + 1]!).replace(/-/g, " ")}`
           crumbs.push({ name, href: currentPath })
           return
         } else if (segment === "tag" && pathSegments[index + 1]) {
-          name = `Tag: ${decodeURIComponent(pathSegments[index + 1]).replace(/-/g, " ")}`
+          name = `Tag: ${decodeURIComponent(pathSegments[index + 1]!).replace(/-/g, " ")}`
           crumbs.push({ name, href: currentPath })
           return
         } else if (segment === "cook") {

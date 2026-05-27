@@ -41,7 +41,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
     let recipes = mockRecipes.filter((recipe) => recipe.category?.slug === slug || recipe.subcategory?.slug === slug)
 
     if (selectedTags.length > 0) {
-      recipes = recipes.filter((recipe) => selectedTags.some((tagSlug) => recipe.tags.includes(tagSlug)))
+      recipes = recipes.filter((recipe) => selectedTags.some((tagSlug) => recipe.tags?.includes(tagSlug)))
     }
     return recipes
   }, [slug, selectedTags])

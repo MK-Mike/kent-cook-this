@@ -134,14 +134,14 @@ export function getAllIngredients(): Ingredient[] {
 export function getIngredientDensity(ingredientName: string): IngredientDensity | undefined {
   const ingredient = mockIngredients.find((ing) => ing.name === ingredientName)
   if (!ingredient) return undefined
-  return mockIngredientDensities.find((density) => density.ingredientId === ingredient.id)
+  return mockIngredientDensities.find((density) => density.ingredientId === ingredient.id) as IngredientDensity | undefined
 }
 
 export function getAllRecipesForUI(): Recipe[] {
   // This function transforms the mock data into the Recipe interface expected by the UI
   // It's a simplified representation for client-side usage without full Drizzle relations
   return mockRecipes.map((recipe) => {
-    const author = mockUsers.find((user) => user.id === recipe.author.id) || mockUsers[0] // Fallback
+    const author = mockUsers.find((user) => user.id.toString() === recipe.author.id) ?? mockUsers[0]! // Fallback
     const category = mockCategories.find((cat) => cat.id === recipe.category?.id)
     const subcategory = mockCategories.find((cat) => cat.id === recipe.subcategory?.id)
     const recipeTagsSlugs = mockRecipeTags.filter((rt) => rt.recipeId === recipe.id).map((rt) => rt.tagId)
@@ -174,7 +174,7 @@ export function getAllRecipesForUI(): Recipe[] {
       author: {
         id: author.id.toString(),
         name: author.name,
-        avatar: author.avatarUrl || "/placeholder.svg?height=40&width=40",
+        avatar: author!.avatarUrl || "/placeholder.svg?height=40&width=40",
       },
       category: category,
       subcategory: subcategory,
@@ -182,7 +182,7 @@ export function getAllRecipesForUI(): Recipe[] {
       ingredients: ingredients,
       instructions: instructions,
       steps: instructions,
-      time: `${(recipe.prepTimeMins || 0) + (recipe.cookTimeMins || 0)} min`,
+      time: `${(recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0)} min`,
       rating: null,
     }
   })

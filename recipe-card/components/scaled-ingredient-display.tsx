@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Recipe } from "@/lib/types"
 import { convertUnits, formatQuantity } from "@/lib/unit-scaler"
-import { getIngredientDensity, getAllUnits } from "@/lib/types"
+import { getIngredientDensityData, getAllUnitsForConversion } from "@/lib/types"
 import { useUnitSystem } from "@/hooks/use-unit-system" // Corrected import path
 
 interface ScaledIngredientDisplayProps {
@@ -17,21 +17,21 @@ export function ScaledIngredientDisplay({ recipe }: ScaledIngredientDisplayProps
   const { unitSystem, toggleUnitSystem } = useUnitSystem()
   const [servings, setServings] = useState(recipe.servings)
 
-  const allUnits = useMemo(() => getAllUnits(), [])
+  const allUnits = useMemo(() => getAllUnitsForConversion(), [])
 
-  const scaledIngredients = useMemo(() => {
+  const scaledIngredients = useMemo((): (Recipe["ingredients"][number] & { scaledQuantity: number; displayUnit: string })[] => {
     const scaleFactor = servings / recipe.servings
     return recipe.ingredients.map((ingredient) => {
       const originalUnit = allUnits.find((u) => u.abbreviation === ingredient.unit || u.name === ingredient.unit)
       if (!originalUnit) {
         console.warn(`Unit not found for: ${ingredient.unit}`)
-        return { ...ingredient, scaledQuantity: ingredient.quantity }
+        return { ...ingredient, scaledQuantity: ingredient.quantity, displayUnit: ingredient.unit }
       }
 
       const targetUnit =
         allUnits.find((u) => u.type === originalUnit.type && u.isMetric === (unitSystem === "metric")) || originalUnit
 
-      const density = getIngredientDensity(ingredient.name)
+      const density = getIngredientDensityData(ingredient.name)
 
       try {
         const convertedQuantity = convertUnits(

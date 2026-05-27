@@ -1,4 +1,4 @@
-import type { Recipe } from "./types"
+import type { Recipe, Author } from "./types"
 import {
   mockIngredients,
   mockUnits,
@@ -70,9 +70,9 @@ export async function getRecipes(options?: GetRecipesOptions): Promise<{ recipes
     const lowerCaseQuery = options.query.toLowerCase()
     filteredRecipes = filteredRecipes.filter(
       (recipe) =>
-        recipe.title.toLowerCase().includes(lowerCaseQuery) ||
+        recipe.name.toLowerCase().includes(lowerCaseQuery) ||
         recipe.description.toLowerCase().includes(lowerCaseQuery) ||
-        recipe.tags.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)) ||
+        recipe.tags?.some((tag) => tag.toLowerCase().includes(lowerCaseQuery)) ||
         recipe.ingredients.some((ingredient) => ingredient.name.toLowerCase().includes(lowerCaseQuery)),
     )
   }
@@ -85,7 +85,7 @@ export async function getRecipes(options?: GetRecipesOptions): Promise<{ recipes
 
   if (options?.tagSlug) {
     filteredRecipes = filteredRecipes.filter((recipe) =>
-      recipe.tags.some((tag) => tag.toLowerCase() === options.tagSlug?.toLowerCase()),
+      recipe.tags?.some((tag) => tag.toLowerCase() === options.tagSlug?.toLowerCase()),
     )
   }
 
@@ -105,7 +105,7 @@ export async function createRecipe(recipe: Omit<Recipe, "id" | "createdAt" | "up
   const newRecipe: Recipe = {
     id: (recipes.length + 1).toString(), // Simple ID generation
     ...recipe,
-    author: { name: "New User", avatarUrl: "/avatars/alex.jpg" }, // Placeholder author
+    author: { id: "0", name: "New User", avatar: "/avatars/alex.jpg" }, // Placeholder author
     createdAt: new Date(),
     updatedAt: new Date(),
   }
@@ -127,9 +127,9 @@ export async function addRecipe(
 ): Promise<Recipe> {
   await simulateDelay(500) // Simulate network delay
 
-  const newRecipeId = recipes.length > 0 ? Math.max(...recipes.map((r) => Number.parseInt(r.id))) + 1 : 1
+  const newRecipeId = recipes.length > 0 ? Math.max(...recipes.map((r) => Number.parseInt(r.id ?? "0"))) + 1 : 1
   const newIngredientIdStart = mockIngredients.length > 0 ? Math.max(...mockIngredients.map((i) => i.id)) + 1 : 1
-  const newStepIdStart = mockSteps.length > 0 ? Math.max(...mockSteps.map((s) => s.id)) + 1 : 1
+  const newStepIdStart = mockSteps.length > 0 ? Math.max(...mockSteps.map((s) => s.id ?? 0)) + 1 : 1
 
   const category = mockCategories.find((c) => c.slug === newRecipeData.categorySlug)
   const subcategory = newRecipeData.subcategorySlug
@@ -142,24 +142,22 @@ export async function addRecipe(
 
   const recipeToAdd: Recipe = {
     id: newRecipeId.toString(),
-    title: newRecipeData.title,
-    slug: newRecipeData.slug,
+    name: newRecipeData.name,
     description: newRecipeData.description,
-    imageUrl: newRecipeData.imageUrl,
-    prepTimeMins: newRecipeData.prepTimeMins,
-    cookTimeMins: newRecipeData.cookTimeMins,
+    image: newRecipeData.image,
+    prepTimeMinutes: newRecipeData.prepTimeMinutes ?? 0,
+    cookTimeMinutes: newRecipeData.cookTimeMinutes ?? 0,
     servings: newRecipeData.servings,
-    authorId: 1, // Default to first mock user for new recipes
-    categoryId: category.id,
-    subcategoryId: subcategory?.id || null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    // These will be populated below
     ingredients: [],
     steps: [],
-    author: mockUsers[0],
+    instructions: [],
+    time: newRecipeData.time,
+    rating: newRecipeData.rating ?? null,
+    author: { id: mockUsers[0]!.id.toString(), name: mockUsers[0]!.name, avatar: mockUsers[0]!.avatarUrl || "/placeholder.svg" },
     category: category,
-    subcategory: subcategory || null,
+    subcategory: subcategory || undefined,
     tags: [],
   }
 
@@ -185,7 +183,7 @@ export async function addRecipe(
     }
 
     addedRecipeIngredients.push({
-      recipeId: newRecipeId,
+      recipeId: newRecipeId.toString(),
       ingredientId: ingredientId,
       quantity: ing.quantity,
       unitId: unit.id,
@@ -194,19 +192,22 @@ export async function addRecipe(
     })
   })
   mockRecipeIngredients.push(...addedRecipeIngredients)
-  recipeToAdd.ingredients = addedRecipeIngredients.map((ri) => ({
-    ...mockIngredients.find((i) => i.id === ri.ingredientId)!,
-    quantity: ri.quantity,
-    unit: mockUnits.find((u) => u.id === ri.unitId)!.abbreviation,
-    notes: ri.notes || undefined,
-  }))
+  recipeToAdd.ingredients = addedRecipeIngredients.map((ri) => {
+    const ing = mockIngredients.find((i) => i.id === ri.ingredientId)
+    return {
+      name: ing?.name ?? "Unknown",
+      quantity: ri.quantity,
+      unit: mockUnits.find((u) => u.id === ri.unitId)?.abbreviation ?? "unit",
+      notes: ri.notes || undefined,
+    }
+  })
 
   // Add steps
   const addedSteps: any[] = []
   newRecipeData.steps.forEach((step, index) => {
     const newStep = {
       id: newStepIdStart + index,
-      recipeId: newRecipeId,
+      recipeId: newRecipeId.toString(),
       position: index + 1,
       title: step.title || null,
       description: step.description,
@@ -224,14 +225,14 @@ export async function addRecipe(
   newRecipeData.tagSlugs.forEach((tagSlug) => {
     const tag = mockTags.find((t) => t.slug === tagSlug)
     if (tag) {
-      addedRecipeTags.push({ recipeId: newRecipeId, tagId: tag.id, createdAt: new Date() })
+      addedRecipeTags.push({ recipeId: newRecipeId.toString(), tagId: tag.id, createdAt: new Date() })
       recipeTags.push(tag)
     } else {
       console.warn(`Tag with slug ${tagSlug} not found. Skipping tag.`)
     }
   })
   mockRecipeTags.push(...addedRecipeTags)
-  recipeToAdd.tags = recipeTags
+  recipeToAdd.tags = recipeTags.map((t: any) => t.name)
 
   return recipeToAdd
 }

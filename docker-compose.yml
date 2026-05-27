@@ -1,0 +1,18 @@
+services:
+  app:
+    image: oven/bun:1  # Official Bun image; pins to latest 1.x or specify tag like :1.1.4
+    working_dir: /app
+    build: .
+    volumes:
+      - .:/app  # Mounts host src for live edits—no rebuilds
+      - /app/node_modules  # Ignore container node_modules to avoid host conflicts
+    ports:
+      - "3000:3000"  # Vite dev server
+    # command: ["sh", "-c", "bun install && bun run dev"]
+    command: ["sh", "-c", "bun run dev"]
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true

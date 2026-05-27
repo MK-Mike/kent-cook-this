@@ -1,4 +1,4 @@
-export { createTable } from "./userData";
+export * from "./base";
 export * from "./userData";
 export * from "./recipeData";
 export * from "./ingredientData";
