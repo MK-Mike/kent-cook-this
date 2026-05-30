@@ -22,12 +22,12 @@ export async function main() {
   console.log("🌱 Seed complete!");
 }
 
-// main()
-//   .catch((err) => {
-//     console.error("Seed failed:", err);
-//     process.exit(1);
-//   })
-//   .finally(() => {
-//     // db.close?.(); // If your db client supports close()
-//     console.log("Go Water Your Seeds");
-//   });
+main()
+  .catch((err) => {
+    console.error("Seed failed:", err);
+    process.exit(1);
+  })
+  .finally(() => {
+    // db.close?.(); // If your db client supports close()
+    console.log("Go Water Your Seeds");
+  });

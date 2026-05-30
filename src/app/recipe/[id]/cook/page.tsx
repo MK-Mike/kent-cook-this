@@ -25,16 +25,7 @@ export default function CookPage() {
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
   const [showIngredients, setShowIngredients] = React.useState(false)
 
-  if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
-  }
-
-  if (!recipe) {
-    notFound()
-    return null
-  }
-
-  const steps = (recipe.steps ?? []).slice().sort((a, b) => a.position - b.position)
+  const steps = (recipe?.steps ?? []).slice().sort((a, b) => a.position - b.position)
   const currentStep = steps[currentStepIndex]
   const progress = steps.length > 0 ? ((currentStepIndex + 1) / steps.length) * 100 : 0
 
@@ -58,7 +49,7 @@ export default function CookPage() {
         handlePrevious()
       }
     },
-    [],
+    [handleNext, handlePrevious],
   )
 
   React.useEffect(() => {
@@ -67,6 +58,15 @@ export default function CookPage() {
       window.removeEventListener("keydown", handleKeyDown)
     }
   }, [handleKeyDown])
+
+  if (isLoading) {
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>
+  }
+
+  if (!recipe) {
+    notFound()
+    return null
+  }
 
   const scaledRecipe = {
     id: recipe.id,
@@ -125,7 +125,7 @@ export default function CookPage() {
                   {currentStep.imageUrl && (
                     <div className="relative mb-4 h-48 w-full overflow-hidden rounded-md">
                       <Image
-                        src={currentStep.imageUrl ?? "/placeholder.svg"}
+                        src={currentStep.imageUrl}
                         alt={`Step ${currentStepIndex + 1}`}
                         fill
                         className="object-cover"

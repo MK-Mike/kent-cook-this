@@ -21,7 +21,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
   if (!recipe) {
     notFound()
   }
-
+ console.log(recipe)
   const totalTimeMins = (recipe.prepTimeMins ?? 0) + (recipe.cookTimeMins ?? 0)
   const tags = recipe.recipeTags?.map((rt) => rt.tag.name) ?? []
 

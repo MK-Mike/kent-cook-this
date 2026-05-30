@@ -12,7 +12,7 @@ import { env } from "~/env";
 // } satisfies Config;
 
 export default {
-  schema: "./src/server/db/schema.ts",
+  schema: "./src/server/db/index.ts",
   dialect: "turso",
   dbCredentials: {
     url: env.TURSO_DATABASE_URL,

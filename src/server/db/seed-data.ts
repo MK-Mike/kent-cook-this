@@ -17,8 +17,7 @@ import type {
 // --- MOCK DATA FOR SEEDING ---
 
 // Helper function to convert dates to Unix timestamps
-// const toUnixTimestamp = (date: Date) => Math.floor(date.getTime() / 1000);
-const toUnixTimestamp = (date: Date) => date;
+const toUnixTimestamp = (date: Date) => Math.floor(date.getTime() / 1000);
 
 // 1. Users
 export const mockUsers: InferInsertModel<typeof users>[] = [
