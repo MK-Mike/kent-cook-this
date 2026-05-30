@@ -4,6 +4,7 @@ import { relations } from "drizzle-orm";
 import {
   uniqueIndex,
   primaryKey,
+  index,
 } from "drizzle-orm/sqlite-core";
 import { createTable } from "./base";
 import { tags, categories } from "./categoryData";
@@ -96,7 +97,10 @@ export const recipeCategories = createTable(
       .notNull()
       .references(() => categories.id, { onDelete: "cascade" }),
   }),
-  (t) => [primaryKey({ columns: [t.recipeId, t.categoryId] })],
+  (t) => [
+    primaryKey({ columns: [t.recipeId, t.categoryId] }),
+    index("recipe_categories_category_id_idx").on(t.categoryId),
+  ],
 );
 
 // Recipe Tags Table (Many-to-Many between Recipes and Tags)

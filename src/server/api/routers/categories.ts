@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { eq, isNull } from "drizzle-orm";
+import { eq, isNull, inArray } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { categories } from "~/server/db/schema";
+import { categories, recipeCategories } from "~/server/db/schema";
 
 const createCategorySchema = z.object({
   name: z.string().min(1),
@@ -57,6 +57,22 @@ export const categoryRouter = createTRPCRouter({
     return await ctx.db.query.categories.findMany({
       where: isNull(categories.parentId),
       with: { subcategories: true },
+    });
+  }),
+
+  /**
+   * Returns only categories that have at least one recipe associated with them.
+   * Used by the sidebar to avoid showing empty categories.
+   */
+  getActive: publicProcedure.query(async ({ ctx }) => {
+    const activeCategoryIds = ctx.db
+      .select({ id: recipeCategories.categoryId })
+      .from(recipeCategories)
+      .groupBy(recipeCategories.categoryId);
+
+    return await ctx.db.query.categories.findMany({
+      where: inArray(categories.id, activeCategoryIds),
+      with: { subcategories: true, parent: true },
     });
   }),
 });
